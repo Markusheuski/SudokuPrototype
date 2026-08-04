@@ -1,6 +1,6 @@
 import Foundation
 
-enum Difficulty: String, CaseIterable, Codable, Identifiable, Equatable {
+enum Difficulty: String, CaseIterable, Codable, Identifiable, Equatable, Hashable {
     case easy, medium, hard, expert
 
     var id: String { rawValue }

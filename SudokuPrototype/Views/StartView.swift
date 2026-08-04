@@ -6,9 +6,12 @@ struct StartView: View {
     @Environment(\.palette) private var palette
     @Environment(\.colorScheme) private var colorScheme
     @State private var showSettings = false
+    @State private var showProfile = false
     @AppStorage("selectedDifficulty") private var selectedDifficulty: Difficulty = .medium
     let onStart: (Difficulty) -> Void
     let onContinue: () -> Void
+
+    private let controlWidth: CGFloat = 300
 
     var body: some View {
         ZStack {
@@ -18,6 +21,12 @@ struct StartView: View {
                         .font(.system(size: 40, weight: .heavy, design: .rounded))
                         .tracking(2)
                     Spacer()
+                    Button {
+                        showProfile = true
+                    } label: {
+                        Image(systemName: "person.circle")
+                            .font(.title2)
+                    }
                     Button {
                         showSettings = true
                     } label: {
@@ -43,27 +52,21 @@ struct StartView: View {
                                 .font(.subheadline.monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
-                        .frame(maxWidth: 240)
-                        .padding()
+                        .frame(width: controlWidth)
+                        .padding(.vertical, 12)
                         .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
                     }
                     .buttonStyle(.plain)
                 }
 
-                Picker("Difficulty", selection: $selectedDifficulty) {
-                    ForEach(Difficulty.allCases) { difficulty in
-                        Text(difficulty.displayName).tag(difficulty)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .tint(palette.accent)
-                .frame(maxWidth: 280)
+                difficultyPicker
+                    .frame(width: controlWidth)
 
                 Button("Start Game") {
                     onStart(selectedDifficulty)
                 }
                 .font(.title.bold())
-                .padding(.horizontal, 48)
+                .frame(width: controlWidth)
                 .padding(.vertical, 20)
                 .buttonStyle(.borderedProminent)
                 .tint(palette.accent)
@@ -77,6 +80,36 @@ struct StartView: View {
             SettingsView(theme: theme)
                 .environment(\.colorScheme, colorScheme)
         }
+        .sheet(isPresented: $showProfile) {
+            ProfileView(stats: PlayerStats.shared) {
+                onStart(selectedDifficulty)
+            }
+            .environment(\.colorScheme, colorScheme)
+        }
+    }
+
+    private var difficultyPicker: some View {
+        HStack(spacing: 4) {
+            ForEach(Difficulty.allCases) { difficulty in
+                let isSelected = difficulty == selectedDifficulty
+                Button {
+                    selectedDifficulty = difficulty
+                } label: {
+                    Text(difficulty.displayName)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            isSelected ? palette.accent : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 10)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
     }
 }
 
