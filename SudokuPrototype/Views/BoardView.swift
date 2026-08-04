@@ -28,16 +28,23 @@ struct BoardView: View {
     private func cellView(row: Int, col: Int, cellSize: CGFloat) -> some View {
         let value = game.board[row][col]
         let isGiven = game.givenMask[row][col]
+        let isRevealed = game.revealedMask[row][col]
         let isSelected = game.selected.map { $0.row == row && $0.col == col } ?? false
-        let isWrong = game.isCellWrong(row: row, col: col)
+        let cellNotes = game.notes[row][col]
 
-        Text(value == 0 ? "" : "\(value)")
-            .font(.system(size: cellSize * 0.5, weight: isGiven ? .bold : .regular))
-            .foregroundColor(isWrong ? .red : (isGiven ? .primary : .blue))
-            .frame(width: cellSize, height: cellSize)
-            .background(isSelected ? Color.blue.opacity(0.2) : Color.clear)
-            .contentShape(Rectangle())
-            .onTapGesture { game.select(row: row, col: col) }
+        ZStack {
+            if value != 0 {
+                Text("\(value)")
+                    .font(.system(size: cellSize * 0.5, weight: isGiven ? .bold : .regular))
+                    .foregroundColor(isGiven ? .primary : (isRevealed ? .secondary : .blue))
+            } else if !cellNotes.isEmpty {
+                NotesGridView(notes: cellNotes, cellSize: cellSize)
+            }
+        }
+        .frame(width: cellSize, height: cellSize)
+        .background(isSelected ? Color.blue.opacity(0.2) : Color.clear)
+        .contentShape(Rectangle())
+        .onTapGesture { game.select(row: row, col: col) }
     }
 
     private func gridLines(size: CGFloat) -> some View {
@@ -55,6 +62,27 @@ struct BoardView: View {
                     path.addLine(to: CGPoint(x: CGFloat(i) * cell, y: size))
                 }
                 .stroke(Color.primary.opacity(i % 3 == 0 ? 0.8 : 0.25), lineWidth: i % 3 == 0 ? 2 : 0.5)
+            }
+        }
+    }
+}
+
+private struct NotesGridView: View {
+    let notes: Set<Int>
+    let cellSize: CGFloat
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(0..<3, id: \.self) { row in
+                HStack(spacing: 0) {
+                    ForEach(1...3, id: \.self) { col in
+                        let n = row * 3 + col
+                        Text(notes.contains(n) ? "\(n)" : "")
+                            .font(.system(size: cellSize * 0.18))
+                            .foregroundColor(.secondary)
+                            .frame(width: cellSize / 3, height: cellSize / 3)
+                    }
+                }
             }
         }
     }

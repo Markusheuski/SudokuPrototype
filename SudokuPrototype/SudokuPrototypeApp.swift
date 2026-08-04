@@ -10,9 +10,14 @@ struct SudokuPrototypeApp: App {
         WindowGroup {
             Group {
                 if hasStarted {
-                    ContentView(theme: theme, game: game)
+                    ContentView(theme: theme, game: game) {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            hasStarted = false
+                        }
+                    }
                 } else {
                     StartView(theme: theme) {
+                        game.reset()
                         withAnimation(.easeInOut(duration: 0.4)) {
                             hasStarted = true
                         }

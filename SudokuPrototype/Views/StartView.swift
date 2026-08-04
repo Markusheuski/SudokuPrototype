@@ -5,24 +5,32 @@ struct StartView: View {
     let onStart: () -> Void
 
     var body: some View {
-        ZStack(alignment: .topTrailing) {
-            VStack(spacing: 32) {
-                Spacer()
-
+        ZStack {
+            VStack {
                 Text("Судоку")
-                    .font(.system(size: 48, weight: .bold))
+                    .font(.system(size: 40, weight: .bold))
+                    .padding(.top, 24)
+                Spacer()
+            }
 
+            VStack {
+                Spacer()
                 Button("Начать игру") {
                     onStart()
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
-
                 Spacer()
             }
 
-            ThemeToggleButton(theme: theme)
-                .padding()
+            VStack {
+                HStack {
+                    Spacer()
+                    ThemeToggleButton(theme: theme)
+                }
+                Spacer()
+            }
+            .padding()
         }
     }
 }

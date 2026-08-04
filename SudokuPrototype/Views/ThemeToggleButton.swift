@@ -3,21 +3,29 @@ import SwiftUI
 struct ThemeToggleButton: View {
     @ObservedObject var theme: ThemeManager
 
+    private let width: CGFloat = 56
+    private let height: CGFloat = 30
+
     var body: some View {
         Button {
             theme.toggle()
         } label: {
-            ZStack {
-                Image(systemName: "sun.max.fill")
-                    .opacity(theme.isDarkMode ? 0 : 1)
-                    .rotationEffect(.degrees(theme.isDarkMode ? -90 : 0))
-                Image(systemName: "moon.fill")
-                    .opacity(theme.isDarkMode ? 1 : 0)
-                    .rotationEffect(.degrees(theme.isDarkMode ? 0 : 90))
+            ZStack(alignment: theme.isDarkMode ? .trailing : .leading) {
+                Capsule()
+                    .fill(theme.isDarkMode ? Color(white: 0.15) : Color.yellow.opacity(0.35))
+
+                Circle()
+                    .fill(Color.white)
+                    .overlay(
+                        Image(systemName: theme.isDarkMode ? "moon.fill" : "sun.max.fill")
+                            .font(.system(size: (height - 6) * 0.55))
+                            .foregroundStyle(theme.isDarkMode ? Color.indigo : Color.orange)
+                    )
+                    .padding(3)
             }
-            .font(.title2)
-            .foregroundStyle(theme.isDarkMode ? .yellow : .orange)
-            .frame(width: 44, height: 44)
+            .frame(width: width, height: height)
         }
+        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.35), value: theme.isDarkMode)
     }
 }
