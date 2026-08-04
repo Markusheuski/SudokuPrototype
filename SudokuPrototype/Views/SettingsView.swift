@@ -21,15 +21,7 @@ struct SettingsView: View {
                 }
 
                 Section("Appearance") {
-                    Picker("Appearance", selection: Binding(
-                        get: { theme.appearanceMode },
-                        set: { theme.setAppearanceMode($0) }
-                    )) {
-                        ForEach(AppearanceMode.allCases) { mode in
-                            Text(mode.displayName).tag(mode)
-                        }
-                    }
-                    .pickerStyle(.segmented)
+                    appearancePicker
                 }
 
                 Section {
@@ -48,14 +40,41 @@ struct SettingsView: View {
                     Toggle("Haptic feedback", isOn: $haptics.isEnabled)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(palette.background.ignoresSafeArea())
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                        .tint(palette.accent)
                 }
             }
         }
+    }
+
+    private var appearancePicker: some View {
+        HStack(spacing: 4) {
+            ForEach(AppearanceMode.allCases) { mode in
+                let isSelected = mode == theme.appearanceMode
+                Button {
+                    theme.setAppearanceMode(mode)
+                } label: {
+                    Text(mode.displayName)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            isSelected ? palette.accent : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 8)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
     }
 
     private var themePreview: some View {
@@ -74,7 +93,7 @@ struct SettingsView: View {
                             .font(.system(size: 20, weight: cell.isAccent ? .regular : .bold))
                             .foregroundColor(cell.isAccent ? palette.accent : palette.given)
                             .frame(width: 36, height: 36)
-                            .background(Color.primary.opacity(0.04), in: RoundedRectangle(cornerRadius: 6))
+                            .background(previewCellBackground(row: row, col: col), in: RoundedRectangle(cornerRadius: 6))
                     }
                 }
             }
@@ -86,6 +105,16 @@ struct SettingsView: View {
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         )
+    }
+
+    private func previewCellBackground(row: Int, col: Int) -> Color {
+        if row == 0 && col == 0 {
+            return palette.accent.opacity(0.35)
+        }
+        if row == 0 || col == 0 {
+            return palette.accent.opacity(0.08)
+        }
+        return Color.clear
     }
 
     private var themeCards: some View {

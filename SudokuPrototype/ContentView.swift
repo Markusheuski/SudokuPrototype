@@ -154,7 +154,7 @@ struct ContentView: View {
         HStack(spacing: 6) {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.caption2)
-                .foregroundColor(mistakesStateColor)
+                .foregroundColor(livesStateColor)
 
             HStack(spacing: 4) {
                 ForEach(0..<game.maxMistakes, id: \.self) { index in
@@ -169,19 +169,18 @@ struct ContentView: View {
         .background(Color.secondary.opacity(0.12), in: Capsule())
     }
 
-    private var isAtMistakeLimit: Bool {
-        game.mistakes >= game.maxMistakes
+    private var remainingLives: Int {
+        max(game.maxMistakes - game.mistakes, 0)
     }
 
-    private var mistakesStateColor: Color {
-        if isAtMistakeLimit { return .red }
-        if game.mistakes > 0 { return .yellow }
-        return .secondary
+    private var livesStateColor: Color {
+        if remainingLives <= 1 { return .red }
+        if remainingLives == game.maxMistakes { return .green }
+        return .yellow
     }
 
     private func dotColor(at index: Int) -> Color {
-        if isAtMistakeLimit { return .red }
-        return index < game.mistakes ? .yellow : Color.secondary.opacity(0.3)
+        index < remainingLives ? livesStateColor : Color.secondary.opacity(0.3)
     }
 
     private var backButton: some View {
