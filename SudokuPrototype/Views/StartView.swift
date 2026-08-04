@@ -8,7 +8,7 @@ struct StartView: View {
         ZStack {
             VStack {
                 HStack {
-                    Text("Sudoku")
+                    Text("SUDOKU")
                         .font(.system(size: 40, weight: .bold))
                     Spacer()
                     ThemeToggleButton(theme: theme)

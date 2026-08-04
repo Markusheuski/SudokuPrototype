@@ -49,9 +49,6 @@ struct ContentView: View {
         HStack {
             backButton
             Spacer()
-            Text("Sudoku")
-                .font(.largeTitle.bold())
-            Spacer()
             mistakesBadge
         }
         .padding(.horizontal)
