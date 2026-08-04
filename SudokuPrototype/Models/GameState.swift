@@ -15,7 +15,7 @@ final class GameState: ObservableObject {
     private(set) var excludedDigits: [[Set<Int>]] // цифры, уже опробованные и оказавшиеся неверными для клетки
     private(set) var revealedMask: [[Bool]] // клетки, дорисованные решением после проигрыша
 
-    let maxMistakes = 3
+    let maxMistakes = 2
     private let clues: Int
 
     init(clues: Int = 32) {
@@ -51,6 +51,12 @@ final class GameState: ObservableObject {
 
     func togglePencilMode() {
         isPencilMode.toggle()
+    }
+
+    func placedCount(of value: Int) -> Int {
+        board.reduce(0) { total, row in
+            total + row.filter { $0 == value }.count
+        }
     }
 
     func enter(value: Int) {

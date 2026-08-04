@@ -42,9 +42,29 @@ struct BoardView: View {
             }
         }
         .frame(width: cellSize, height: cellSize)
-        .background(isSelected ? Color.blue.opacity(0.2) : Color.clear)
+        .background(highlightColor(row: row, col: col, isSelected: isSelected))
         .contentShape(Rectangle())
         .onTapGesture { game.select(row: row, col: col) }
+    }
+
+    private func highlightColor(row: Int, col: Int, isSelected: Bool) -> Color {
+        if isSelected {
+            return Color.blue.opacity(0.35)
+        }
+        guard let sel = game.selected else { return .clear }
+
+        let selectedValue = game.board[sel.row][sel.col]
+        if selectedValue != 0 && game.board[row][col] == selectedValue {
+            return Color.blue.opacity(0.22)
+        }
+
+        let sameRowOrCol = sel.row == row || sel.col == col
+        let sameBlock = sel.row / 3 == row / 3 && sel.col / 3 == col / 3
+        if sameRowOrCol || sameBlock {
+            return Color.blue.opacity(0.08)
+        }
+
+        return .clear
     }
 
     private func gridLines(size: CGFloat) -> some View {

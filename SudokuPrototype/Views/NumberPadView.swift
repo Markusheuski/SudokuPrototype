@@ -23,6 +23,7 @@ struct NumberPadView: View {
     private func numberButton(_ number: Int) -> some View {
         let isExcluded = game.selected.map { game.excludedDigits[$0.row][$0.col].contains(number) } ?? false
         let isNoted = game.selected.map { game.notes[$0.row][$0.col].contains(number) } ?? false
+        let isFilled = game.placedCount(of: number) == 9
 
         return Button {
             game.enter(value: number)
@@ -34,8 +35,8 @@ struct NumberPadView: View {
         }
         .buttonStyle(.bordered)
         .tint(isNoted && game.isPencilMode ? Color.accentColor : nil)
-        .foregroundColor(isExcluded ? Color.red.opacity(0.5) : nil)
-        .disabled(game.selected == nil || isExcluded)
+        .foregroundColor(isFilled ? Color.secondary : (isExcluded ? Color.red.opacity(0.5) : nil))
+        .disabled(game.selected == nil || isExcluded || isFilled)
     }
 
     private var pencilButton: some View {

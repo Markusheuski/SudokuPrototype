@@ -55,16 +55,37 @@ struct ContentView: View {
     }
 
     private var mistakesBadge: some View {
-        HStack(spacing: 4) {
-            ForEach(0..<game.maxMistakes, id: \.self) { index in
-                Circle()
-                    .fill(index < game.mistakes ? Color.red : Color.red.opacity(0.2))
-                    .frame(width: 10, height: 10)
+        HStack(spacing: 6) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.caption2)
+                .foregroundColor(mistakesStateColor)
+
+            HStack(spacing: 4) {
+                ForEach(0..<game.maxMistakes, id: \.self) { index in
+                    Circle()
+                        .fill(dotColor(at: index))
+                        .frame(width: 10, height: 10)
+                }
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(Color.red.opacity(0.1), in: Capsule())
+        .background(Color.secondary.opacity(0.12), in: Capsule())
+    }
+
+    private var isAtMistakeLimit: Bool {
+        game.mistakes >= game.maxMistakes
+    }
+
+    private var mistakesStateColor: Color {
+        if isAtMistakeLimit { return .red }
+        if game.mistakes > 0 { return .yellow }
+        return .secondary
+    }
+
+    private func dotColor(at index: Int) -> Color {
+        if isAtMistakeLimit { return .red }
+        return index < game.mistakes ? .yellow : Color.secondary.opacity(0.3)
     }
 
     private var backButton: some View {
