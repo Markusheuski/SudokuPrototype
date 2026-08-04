@@ -9,7 +9,8 @@ struct StartView: View {
             VStack {
                 HStack {
                     Text("SUDOKU")
-                        .font(.system(size: 40, weight: .bold))
+                        .font(.system(size: 40, weight: .heavy, design: .rounded))
+                        .tracking(2)
                     Spacer()
                     ThemeToggleButton(theme: theme)
                 }
@@ -22,9 +23,9 @@ struct StartView: View {
                 Button("Start Game") {
                     onStart()
                 }
-                .font(.title2.bold())
-                .padding(.horizontal, 40)
-                .padding(.vertical, 16)
+                .font(.title.bold())
+                .padding(.horizontal, 48)
+                .padding(.vertical, 20)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 Spacer()
