@@ -16,10 +16,35 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable, Equatable, Hashabl
 
     var clueCount: Int {
         switch self {
-        case .easy: return 40
+        case .easy: return 45
         case .medium: return 32
         case .hard: return 28
         case .expert: return 24
+        }
+    }
+
+    var maxMistakes: Int {
+        switch self {
+        case .easy: return 3
+        case .medium, .hard, .expert: return 2
+        }
+    }
+
+    var next: Difficulty? {
+        switch self {
+        case .easy: return .medium
+        case .medium: return .hard
+        case .hard: return .expert
+        case .expert: return nil
+        }
+    }
+
+    var previous: Difficulty? {
+        switch self {
+        case .easy: return nil
+        case .medium: return .easy
+        case .hard: return .medium
+        case .expert: return .hard
         }
     }
 }

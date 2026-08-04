@@ -5,8 +5,10 @@ struct StartView: View {
     @ObservedObject var game: GameState
     @Environment(\.palette) private var palette
     @Environment(\.colorScheme) private var colorScheme
+    @ObservedObject private var stats = PlayerStats.shared
     @State private var showSettings = false
     @State private var showProfile = false
+    @State private var lockedHintText: String?
     @AppStorage("selectedDifficulty") private var selectedDifficulty: Difficulty = .medium
     let onStart: (Difficulty) -> Void
     let onContinue: () -> Void
@@ -62,6 +64,12 @@ struct StartView: View {
                 difficultyPicker
                     .frame(width: controlWidth)
 
+                Text(lockedHintText ?? " ")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .opacity(lockedHintText == nil ? 0 : 1)
+                    .frame(width: controlWidth, height: 16)
+
                 Button("Start Game") {
                     onStart(selectedDifficulty)
                 }
@@ -92,8 +100,9 @@ struct StartView: View {
         HStack(spacing: 4) {
             ForEach(Difficulty.allCases) { difficulty in
                 let isSelected = difficulty == selectedDifficulty
+                let isUnlocked = stats.unlockedDifficulties.contains(difficulty)
                 Button {
-                    selectedDifficulty = difficulty
+                    selectDifficulty(difficulty)
                 } label: {
                     Text(difficulty.displayName)
                         .font(.subheadline.weight(isSelected ? .semibold : .regular))
@@ -104,12 +113,29 @@ struct StartView: View {
                             isSelected ? palette.accent : Color.clear,
                             in: RoundedRectangle(cornerRadius: 10)
                         )
+                        .opacity(isUnlocked ? 1 : 0.4)
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
         .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    private func selectDifficulty(_ difficulty: Difficulty) {
+        guard stats.unlockedDifficulties.contains(difficulty) else {
+            guard let prerequisite = difficulty.previous else { return }
+            withAnimation {
+                lockedHintText = "Beat \(prerequisite.displayName) to unlock \(difficulty.displayName)"
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation {
+                    lockedHintText = nil
+                }
+            }
+            return
+        }
+        selectedDifficulty = difficulty
     }
 }
 

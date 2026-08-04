@@ -17,7 +17,7 @@ final class GameState: ObservableObject {
     private(set) var excludedDigits: [[Set<Int>]] // цифры, уже опробованные и оказавшиеся неверными для клетки
     private(set) var revealedMask: [[Bool]] // клетки, дорисованные решением после проигрыша
 
-    let maxMistakes = 2
+    var maxMistakes: Int { difficulty.maxMistakes }
     private(set) var difficulty: Difficulty
     private var timer: Timer?
 
