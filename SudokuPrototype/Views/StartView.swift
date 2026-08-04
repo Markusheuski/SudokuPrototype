@@ -3,6 +3,8 @@ import SwiftUI
 struct StartView: View {
     @ObservedObject var theme: ThemeManager
     @ObservedObject var game: GameState
+    @Environment(\.palette) private var palette
+    @State private var showSettings = false
     let onStart: () -> Void
     let onContinue: () -> Void
 
@@ -14,7 +16,12 @@ struct StartView: View {
                         .font(.system(size: 40, weight: .heavy, design: .rounded))
                         .tracking(2)
                     Spacer()
-                    ThemeToggleButton(theme: theme)
+                    Button {
+                        showSettings = true
+                    } label: {
+                        Image(systemName: "gearshape.fill")
+                            .font(.title2)
+                    }
                 }
                 .padding()
                 Spacer()
@@ -48,10 +55,15 @@ struct StartView: View {
                 .padding(.horizontal, 48)
                 .padding(.vertical, 20)
                 .buttonStyle(.borderedProminent)
+                .tint(palette.accent)
                 .controlSize(.large)
 
                 Spacer()
             }
+        }
+        .background(palette.background.ignoresSafeArea())
+        .sheet(isPresented: $showSettings) {
+            SettingsView(theme: theme)
         }
     }
 }

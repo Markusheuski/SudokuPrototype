@@ -3,6 +3,7 @@ import SwiftUI
 struct ContentView: View {
     @ObservedObject var game: GameState
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.palette) private var palette
     let onBack: () -> Void
 
     var body: some View {
@@ -28,6 +29,7 @@ struct ContentView: View {
             Spacer()
         }
         .padding(.top, 8)
+        .background(palette.background.ignoresSafeArea())
         .overlay {
             if game.isGameOver || game.isSolved {
                 endOfGameOverlay

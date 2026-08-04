@@ -2,6 +2,7 @@ import SwiftUI
 
 struct NumberPadView: View {
     @ObservedObject var game: GameState
+    @Environment(\.palette) private var palette
 
     private let columns = [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
 
@@ -34,7 +35,7 @@ struct NumberPadView: View {
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.bordered)
-        .tint(isNoted && game.isPencilMode ? Color.accentColor : nil)
+        .tint(isNoted && game.isPencilMode ? palette.accent : nil)
         .foregroundColor(isFilled ? Color.secondary : (isExcluded ? Color.red.opacity(0.5) : nil))
         .disabled(game.selected == nil || isExcluded || isFilled)
     }
@@ -47,7 +48,7 @@ struct NumberPadView: View {
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
         .buttonStyle(.bordered)
-        .tint(game.isPencilMode ? Color.accentColor : nil)
+        .tint(game.isPencilMode ? palette.accent : nil)
     }
 
     private var clearButton: some View {

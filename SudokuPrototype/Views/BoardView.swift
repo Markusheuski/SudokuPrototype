@@ -2,6 +2,7 @@ import SwiftUI
 
 struct BoardView: View {
     @ObservedObject var game: GameState
+    @Environment(\.palette) private var palette
 
     var body: some View {
         GeometryReader { geo in
@@ -36,7 +37,7 @@ struct BoardView: View {
             if value != 0 {
                 Text("\(value)")
                     .font(.system(size: cellSize * 0.5, weight: isGiven ? .bold : .regular))
-                    .foregroundColor(isGiven ? .primary : (isRevealed ? .secondary : .blue))
+                    .foregroundColor(isGiven || isRevealed ? palette.given : palette.accent)
             } else if !cellNotes.isEmpty {
                 NotesGridView(notes: cellNotes, cellSize: cellSize)
             }
@@ -49,22 +50,26 @@ struct BoardView: View {
 
     private func highlightColor(row: Int, col: Int, isSelected: Bool) -> Color {
         if isSelected {
-            return Color.blue.opacity(0.35)
+            return palette.accent.opacity(0.35)
         }
         guard let sel = game.selected else { return .clear }
 
         let selectedValue = game.board[sel.row][sel.col]
         if selectedValue != 0 && game.board[row][col] == selectedValue {
-            return Color.blue.opacity(0.22)
+            return palette.accent.opacity(0.22)
         }
 
         let sameRowOrCol = sel.row == row || sel.col == col
         let sameBlock = sel.row / 3 == row / 3 && sel.col / 3 == col / 3
         if sameRowOrCol || sameBlock {
-            return Color.blue.opacity(0.08)
+            return palette.accent.opacity(0.08)
         }
 
         return .clear
+    }
+
+    private func isThickLine(_ i: Int) -> Bool {
+        i == 3 || i == 6
     }
 
     private func gridLines(size: CGFloat) -> some View {
@@ -75,13 +80,13 @@ struct BoardView: View {
                     path.move(to: CGPoint(x: 0, y: CGFloat(i) * cell))
                     path.addLine(to: CGPoint(x: size, y: CGFloat(i) * cell))
                 }
-                .stroke(Color.primary.opacity(i % 3 == 0 ? 0.8 : 0.25), lineWidth: i % 3 == 0 ? 2 : 0.5)
+                .stroke(Color.primary.opacity(isThickLine(i) ? 0.8 : 0.25), lineWidth: isThickLine(i) ? 2 : 0.5)
 
                 Path { path in
                     path.move(to: CGPoint(x: CGFloat(i) * cell, y: 0))
                     path.addLine(to: CGPoint(x: CGFloat(i) * cell, y: size))
                 }
-                .stroke(Color.primary.opacity(i % 3 == 0 ? 0.8 : 0.25), lineWidth: i % 3 == 0 ? 2 : 0.5)
+                .stroke(Color.primary.opacity(isThickLine(i) ? 0.8 : 0.25), lineWidth: isThickLine(i) ? 2 : 0.5)
             }
         }
     }
