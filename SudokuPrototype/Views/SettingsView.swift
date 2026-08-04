@@ -78,43 +78,21 @@ struct SettingsView: View {
     }
 
     private var themePreview: some View {
-        let rows: [[(value: Int, isAccent: Bool)]] = [
-            [(5, false), (0, false), (0, false)],
-            [(0, false), (8, false), (0, false)],
-            [(0, false), (0, false), (3, true)]
+        let cells: [[MiniBoardPreview.Cell]] = [
+            [.init(5, highlight: .selected), .init(0, highlight: .peer), .init(0, highlight: .peer)],
+            [.init(0, highlight: .peer), .init(8), .init(0)],
+            [.init(0, highlight: .peer), .init(0), .init(3, isAccent: true)]
         ]
 
-        return VStack(spacing: 4) {
-            ForEach(0..<3, id: \.self) { row in
-                HStack(spacing: 4) {
-                    ForEach(0..<3, id: \.self) { col in
-                        let cell = rows[row][col]
-                        Text(cell.value == 0 ? "" : "\(cell.value)")
-                            .font(.system(size: 20, weight: cell.isAccent ? .regular : .bold))
-                            .foregroundColor(cell.isAccent ? palette.accent : palette.given)
-                            .frame(width: 36, height: 36)
-                            .background(previewCellBackground(row: row, col: col), in: RoundedRectangle(cornerRadius: 6))
-                    }
-                }
-            }
-        }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(palette.background, in: RoundedRectangle(cornerRadius: 16))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
-        )
-    }
-
-    private func previewCellBackground(row: Int, col: Int) -> Color {
-        if row == 0 && col == 0 {
-            return palette.accent.opacity(0.35)
-        }
-        if row == 0 || col == 0 {
-            return palette.accent.opacity(0.08)
-        }
-        return Color.clear
+        return MiniBoardPreview(cells: cells, palette: palette)
+            .frame(width: 130, height: 130)
+            .padding(16)
+            .frame(maxWidth: .infinity)
+            .background(palette.background, in: RoundedRectangle(cornerRadius: 16))
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+            )
     }
 
     private var themeCards: some View {
