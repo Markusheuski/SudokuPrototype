@@ -8,9 +8,9 @@ struct SudokuPrototypeApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
+            ZStack {
                 if hasStarted {
-                    ContentView(theme: theme, game: game) {
+                    ContentView(game: game) {
                         withAnimation(.easeInOut(duration: 0.4)) {
                             hasStarted = false
                         }
@@ -23,9 +23,12 @@ struct SudokuPrototypeApp: App {
                         }
                     }
                 }
+
+                Color.black
+                    .opacity(theme.isDimmed ? 1 : 0)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
             }
-            .id(theme.isDarkMode)
-            .transition(.opacity)
             .preferredColorScheme(theme.isDarkMode ? .dark : .light)
         }
     }

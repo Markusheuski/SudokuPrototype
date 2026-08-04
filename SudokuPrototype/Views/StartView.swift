@@ -7,30 +7,28 @@ struct StartView: View {
     var body: some View {
         ZStack {
             VStack {
-                Text("Судоку")
-                    .font(.system(size: 40, weight: .bold))
-                    .padding(.top, 24)
+                HStack {
+                    Text("Sudoku")
+                        .font(.system(size: 40, weight: .bold))
+                    Spacer()
+                    ThemeToggleButton(theme: theme)
+                }
+                .padding()
                 Spacer()
             }
 
             VStack {
                 Spacer()
-                Button("Начать игру") {
+                Button("Start Game") {
                     onStart()
                 }
+                .font(.title2.bold())
+                .padding(.horizontal, 40)
+                .padding(.vertical, 16)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 Spacer()
             }
-
-            VStack {
-                HStack {
-                    Spacer()
-                    ThemeToggleButton(theme: theme)
-                }
-                Spacer()
-            }
-            .padding()
         }
     }
 }

@@ -1,21 +1,22 @@
 import SwiftUI
 
 struct ContentView: View {
-    @ObservedObject var theme: ThemeManager
     @ObservedObject var game: GameState
     let onBack: () -> Void
 
     var body: some View {
-        GeometryReader { geo in
-            Group {
-                if geo.size.width > geo.size.height {
-                    landscapeLayout
-                } else {
-                    portraitLayout
-                }
-            }
-            .frame(width: geo.size.width, height: geo.size.height)
+        VStack(spacing: 16) {
+            topBar
+
+            BoardView(game: game)
+                .padding(.horizontal)
+
+            NumberPadView(game: game)
+                .padding(.horizontal)
+
+            Spacer()
         }
+        .padding(.top, 8)
         .overlay {
             if game.isGameOver {
                 Color.black.opacity(0.001)
@@ -29,13 +30,13 @@ struct ContentView: View {
                     }
             }
         }
-        .alert("Решено!", isPresented: $game.isSolved) {
+        .alert("Solved!", isPresented: $game.isSolved) {
             Button("OK") { }
         }
     }
 
     private var gameOverBanner: some View {
-        Text("Ошибки закончились — нажмите, чтобы сыграть заново")
+        Text("Out of mistakes — tap to play again")
             .font(.footnote.bold())
             .multilineTextAlignment(.center)
             .padding(.horizontal, 16)
@@ -44,66 +45,29 @@ struct ContentView: View {
             .transition(.opacity)
     }
 
-    private var portraitLayout: some View {
-        VStack(spacing: 16) {
-            topBar
-
-            Text("Ошибки: \(game.mistakes)/\(game.maxMistakes)")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            BoardView(game: game)
-                .padding(.horizontal)
-
-            NumberPadView(game: game)
-                .padding(.horizontal)
-
-            Spacer()
-        }
-        .padding(.top, 8)
-    }
-
-    private var landscapeLayout: some View {
-        VStack(spacing: 8) {
-            HStack {
-                backButton
-                Spacer()
-                VStack(spacing: 2) {
-                    Text("Судоку")
-                        .font(.headline)
-                    Text("Ошибки: \(game.mistakes)/\(game.maxMistakes)")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-                Spacer()
-                ThemeToggleButton(theme: theme)
-            }
-            .padding(.horizontal)
-
-            BoardView(game: game)
-                .padding(.horizontal)
-
-            if game.selected != nil {
-                NumberPadView(game: game)
-                    .padding(.horizontal)
-                    .padding(.bottom, 8)
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .padding(.top, 8)
-        .animation(.easeInOut(duration: 0.3), value: game.selected != nil)
-    }
-
     private var topBar: some View {
         HStack {
             backButton
             Spacer()
-            Text("Судоку")
+            Text("Sudoku")
                 .font(.largeTitle.bold())
             Spacer()
-            ThemeToggleButton(theme: theme)
+            mistakesBadge
         }
         .padding(.horizontal)
+    }
+
+    private var mistakesBadge: some View {
+        HStack(spacing: 4) {
+            ForEach(0..<game.maxMistakes, id: \.self) { index in
+                Circle()
+                    .fill(index < game.mistakes ? Color.red : Color.red.opacity(0.2))
+                    .frame(width: 10, height: 10)
+            }
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 8)
+        .background(Color.red.opacity(0.1), in: Capsule())
     }
 
     private var backButton: some View {
@@ -118,5 +82,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView(theme: ThemeManager(), game: GameState(), onBack: {})
+    ContentView(game: GameState(), onBack: {})
 }
