@@ -71,17 +71,21 @@ final class GameState: ObservableObject {
         isPencilMode = false
         isPaused = false
         elapsedSeconds = 0
+        stopTimer()
+        startTimer()
         persist()
     }
 
     func select(row: Int, col: Int) {
         guard !isGameOver, !isPaused else { return }
         selected = (row, col)
+        HapticManager.shared.cellSelected()
         persist()
     }
 
     func togglePencilMode() {
         isPencilMode.toggle()
+        HapticManager.shared.pencilModeToggled()
         persist()
     }
 
@@ -108,10 +112,12 @@ final class GameState: ObservableObject {
         if value == solution[cell.row][cell.col] {
             board[cell.row][cell.col] = value
             notes[cell.row][cell.col].removeAll()
+            HapticManager.shared.correctEntry()
             checkSolved()
         } else {
             excludedDigits[cell.row][cell.col].insert(value)
             mistakes += 1
+            HapticManager.shared.wrongEntry()
             if mistakes >= maxMistakes {
                 triggerGameOver()
             }
@@ -178,12 +184,14 @@ final class GameState: ObservableObject {
         selected = nil
         isGameOver = true
         stopTimer()
+        HapticManager.shared.gameOver()
     }
 
     private func checkSolved() {
         isSolved = board == solution
         if isSolved {
             stopTimer()
+            HapticManager.shared.win()
         }
     }
 

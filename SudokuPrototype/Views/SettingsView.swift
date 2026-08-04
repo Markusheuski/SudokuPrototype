@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var theme: ThemeManager
+    @ObservedObject private var haptics = HapticManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.dismiss) private var dismiss
 
@@ -35,6 +36,10 @@ struct SettingsView: View {
                 }
                 .opacity(isDarkActive ? 1 : 0.4)
                 .disabled(!isDarkActive)
+
+                Section("Feedback") {
+                    Toggle("Haptic feedback", isOn: $haptics.isEnabled)
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
