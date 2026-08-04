@@ -4,6 +4,7 @@ struct StartView: View {
     @ObservedObject var theme: ThemeManager
     @ObservedObject var game: GameState
     @Environment(\.palette) private var palette
+    @Environment(\.colorScheme) private var colorScheme
     @State private var showSettings = false
     let onStart: () -> Void
     let onContinue: () -> Void
@@ -64,6 +65,7 @@ struct StartView: View {
         .background(palette.background.ignoresSafeArea())
         .sheet(isPresented: $showSettings) {
             SettingsView(theme: theme)
+                .environment(\.colorScheme, colorScheme)
         }
     }
 }

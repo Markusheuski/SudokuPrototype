@@ -50,6 +50,14 @@ enum DarkVariant: String, CaseIterable, Identifiable, Equatable {
         case .navy: return Color(hex: "4FBFA8")
         }
     }
+
+    var givenColor: Color {
+        switch self {
+        case .graphite: return Color(hex: "9B9BA1")
+        case .charcoal: return Color(hex: "A69C8E")
+        case .navy: return Color(hex: "9B9BA1")
+        }
+    }
 }
 
 struct Palette: Equatable {
@@ -67,7 +75,7 @@ struct Palette: Equatable {
         Palette(
             background: variant.backgroundColor,
             accent: variant.accentColor,
-            given: Color(hex: "9B9BA1")
+            given: variant.givenColor
         )
     }
 }
