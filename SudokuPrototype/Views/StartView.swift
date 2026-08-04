@@ -2,7 +2,9 @@ import SwiftUI
 
 struct StartView: View {
     @ObservedObject var theme: ThemeManager
+    @ObservedObject var game: GameState
     let onStart: () -> Void
+    let onContinue: () -> Void
 
     var body: some View {
         ZStack {
@@ -18,8 +20,27 @@ struct StartView: View {
                 Spacer()
             }
 
-            VStack {
+            VStack(spacing: 16) {
                 Spacer()
+
+                if game.hasProgress {
+                    Button {
+                        onContinue()
+                    } label: {
+                        VStack(spacing: 4) {
+                            Text("Continue Game")
+                                .font(.headline)
+                            Text(GameState.formatted(game.elapsedSeconds))
+                                .font(.subheadline.monospacedDigit())
+                                .foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: 240)
+                        .padding()
+                        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+                    }
+                    .buttonStyle(.plain)
+                }
+
                 Button("Start Game") {
                     onStart()
                 }
@@ -28,6 +49,7 @@ struct StartView: View {
                 .padding(.vertical, 20)
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+
                 Spacer()
             }
         }
@@ -35,5 +57,5 @@ struct StartView: View {
 }
 
 #Preview {
-    StartView(theme: ThemeManager()) {}
+    StartView(theme: ThemeManager(), game: GameState(), onStart: {}, onContinue: {})
 }

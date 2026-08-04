@@ -16,8 +16,12 @@ struct SudokuPrototypeApp: App {
                         }
                     }
                 } else {
-                    StartView(theme: theme) {
+                    StartView(theme: theme, game: game) {
                         game.reset()
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            hasStarted = true
+                        }
+                    } onContinue: {
                         withAnimation(.easeInOut(duration: 0.4)) {
                             hasStarted = true
                         }
