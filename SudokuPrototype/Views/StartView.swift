@@ -87,6 +87,7 @@ struct StartView: View {
         .sheet(isPresented: $showSettings) {
             SettingsView(theme: theme)
                 .environment(\.colorScheme, colorScheme)
+                .environment(\.palette, palette)
         }
         .sheet(isPresented: $showProfile) {
             ProfileView(stats: PlayerStats.shared) {
@@ -104,16 +105,23 @@ struct StartView: View {
                 Button {
                     selectDifficulty(difficulty)
                 } label: {
-                    Text(difficulty.displayName)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 10)
-                        )
-                        .opacity(isUnlocked ? 1 : 0.4)
+                    HStack(spacing: 3) {
+                        Text(difficulty.displayName)
+                            .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        if !isUnlocked {
+                            Image(systemName: "lock.fill")
+                                .font(.system(size: 10))
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .foregroundStyle(isSelected ? Color.white : Color.primary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(
+                        isSelected ? palette.accent : Color.clear,
+                        in: RoundedRectangle(cornerRadius: 10)
+                    )
+                    .opacity(isUnlocked ? 1 : 0.4)
                 }
                 .buttonStyle(.plain)
             }
