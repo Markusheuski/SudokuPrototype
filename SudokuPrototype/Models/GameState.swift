@@ -18,16 +18,17 @@ final class GameState: ObservableObject {
     private(set) var revealedMask: [[Bool]] // клетки, дорисованные решением после проигрыша
 
     let maxMistakes = 2
-    private let clues: Int
+    private(set) var difficulty: Difficulty
     private var timer: Timer?
 
     var hasProgress: Bool {
         elapsedSeconds > 0 && !isSolved && !isGameOver
     }
 
-    init(clues: Int = 32) {
-        self.clues = clues
+    init(difficulty: Difficulty = .medium) {
+        self.difficulty = difficulty
         if let snapshot = GameState.loadSnapshot(), !snapshot.isSolved, !snapshot.isGameOver {
+            self.difficulty = snapshot.difficulty
             board = snapshot.board
             solution = snapshot.solution
             givenMask = snapshot.givenMask
@@ -42,7 +43,7 @@ final class GameState: ObservableObject {
                 selected = (r, c)
             }
         } else {
-            let generated = SudokuGenerator.generatePuzzle(clues: clues)
+            let generated = SudokuGenerator.generatePuzzle(clues: difficulty.clueCount)
             board = generated.puzzle
             solution = generated.solution
             givenMask = generated.puzzle.map { row in row.map { $0 != 0 } }
@@ -57,7 +58,12 @@ final class GameState: ObservableObject {
     }
 
     func reset() {
-        let generated = SudokuGenerator.generatePuzzle(clues: clues)
+        reset(difficulty: difficulty)
+    }
+
+    func reset(difficulty newDifficulty: Difficulty) {
+        difficulty = newDifficulty
+        let generated = SudokuGenerator.generatePuzzle(clues: newDifficulty.clueCount)
         board = generated.puzzle
         solution = generated.solution
         givenMask = generated.puzzle.map { row in row.map { $0 != 0 } }
@@ -200,6 +206,7 @@ final class GameState: ObservableObject {
     private static let storageKey = "sudoku.savedGame"
 
     private struct Snapshot: Codable {
+        var difficulty: Difficulty
         var board: [[Int]]
         var solution: [[Int]]
         var givenMask: [[Bool]]
@@ -218,6 +225,7 @@ final class GameState: ObservableObject {
 
     private func persist() {
         let snapshot = Snapshot(
+            difficulty: difficulty,
             board: board,
             solution: solution,
             givenMask: givenMask,

@@ -40,8 +40,8 @@ private struct RootView: View {
                     }
                 }
             } else {
-                StartView(theme: theme, game: game) {
-                    game.reset()
+                StartView(theme: theme, game: game) { difficulty in
+                    game.reset(difficulty: difficulty)
                     withAnimation(.easeInOut(duration: 0.4)) {
                         hasStarted = true
                     }

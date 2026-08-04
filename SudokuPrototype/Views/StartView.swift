@@ -6,7 +6,8 @@ struct StartView: View {
     @Environment(\.palette) private var palette
     @Environment(\.colorScheme) private var colorScheme
     @State private var showSettings = false
-    let onStart: () -> Void
+    @AppStorage("selectedDifficulty") private var selectedDifficulty: Difficulty = .medium
+    let onStart: (Difficulty) -> Void
     let onContinue: () -> Void
 
     var body: some View {
@@ -38,7 +39,7 @@ struct StartView: View {
                         VStack(spacing: 4) {
                             Text("Continue Game")
                                 .font(.headline)
-                            Text(GameState.formatted(game.elapsedSeconds))
+                            Text("\(game.difficulty.displayName) · \(GameState.formatted(game.elapsedSeconds))")
                                 .font(.subheadline.monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
@@ -49,8 +50,17 @@ struct StartView: View {
                     .buttonStyle(.plain)
                 }
 
+                Picker("Difficulty", selection: $selectedDifficulty) {
+                    ForEach(Difficulty.allCases) { difficulty in
+                        Text(difficulty.displayName).tag(difficulty)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .tint(palette.accent)
+                .frame(maxWidth: 280)
+
                 Button("Start Game") {
-                    onStart()
+                    onStart(selectedDifficulty)
                 }
                 .font(.title.bold())
                 .padding(.horizontal, 48)
@@ -71,5 +81,5 @@ struct StartView: View {
 }
 
 #Preview {
-    StartView(theme: ThemeManager(), game: GameState(), onStart: {}, onContinue: {})
+    StartView(theme: ThemeManager(), game: GameState(), onStart: { _ in }, onContinue: {})
 }
