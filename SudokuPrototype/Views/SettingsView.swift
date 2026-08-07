@@ -2,6 +2,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @ObservedObject var theme: ThemeManager
+    @ObservedObject var game: GameState
     @ObservedObject private var haptics = HapticManager.shared
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.palette) private var palette
@@ -39,6 +40,14 @@ struct SettingsView: View {
                 Section("Feedback") {
                     Toggle("Haptic feedback", isOn: $haptics.isEnabled)
                 }
+
+                #if DEBUG
+                Section("Debug") {
+                    Button("Reset All Data", role: .destructive) {
+                        resetAllData()
+                    }
+                }
+                #endif
             }
             .scrollContentBackground(.hidden)
             .background(palette.background.ignoresSafeArea())
@@ -140,8 +149,24 @@ struct SettingsView: View {
         }
         .buttonStyle(.plain)
     }
+
+    #if DEBUG
+    private func resetAllData() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: "sudoku.playerStats")
+        defaults.removeObject(forKey: "sudoku.savedGame")
+        defaults.removeObject(forKey: "appearanceMode")
+        defaults.removeObject(forKey: "selectedTheme")
+        defaults.removeObject(forKey: "hapticFeedbackEnabled")
+
+        PlayerStats.shared.resetAll()
+        theme.resetToDefaults()
+        game.reset()
+        HapticManager.shared.isEnabled = true
+    }
+    #endif
 }
 
 #Preview {
-    SettingsView(theme: ThemeManager())
+    SettingsView(theme: ThemeManager(), game: GameState())
 }

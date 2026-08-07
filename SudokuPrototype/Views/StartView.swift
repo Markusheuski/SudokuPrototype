@@ -85,7 +85,7 @@ struct StartView: View {
         }
         .background(palette.background.ignoresSafeArea())
         .sheet(isPresented: $showSettings) {
-            SettingsView(theme: theme)
+            SettingsView(theme: theme, game: game)
                 .environment(\.colorScheme, colorScheme)
                 .environment(\.palette, palette)
         }

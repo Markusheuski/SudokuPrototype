@@ -5,13 +5,53 @@ struct ProfileView: View {
     @Environment(\.dismiss) private var dismiss
     let onStartGame: () -> Void
 
+    /// Hard-coded illustrative numbers for the empty-state preview —
+    /// intentionally never derived from `stats`, so they can't drift into
+    /// showing real data by accident.
+    private static let demoData = ProfileDisplayData(
+        gamesPlayed: 12,
+        currentStreak: 3,
+        bestStreak: 5,
+        bestTime: [.easy: 178, .medium: 312],
+        wins: [.easy: 6, .medium: 3],
+        averageTime: [.easy: 205, .medium: 340],
+        flawlessPercentage: 44,
+        averageMistakes: 0.8
+    )
+
+    private var liveData: ProfileDisplayData {
+        var averages: [Difficulty: Int] = [:]
+        for difficulty in Difficulty.allCases {
+            if let avg = stats.averageTime(for: difficulty) {
+                averages[difficulty] = avg
+            }
+        }
+        return ProfileDisplayData(
+            gamesPlayed: stats.gamesPlayed,
+            currentStreak: stats.currentStreak,
+            bestStreak: stats.bestStreak,
+            bestTime: stats.bestTime,
+            wins: stats.wins,
+            averageTime: averages,
+            flawlessPercentage: overallFlawlessPercentage,
+            averageMistakes: stats.averageMistakes()
+        )
+    }
+
+    private var overallFlawlessPercentage: Int? {
+        let totalWins = stats.wins.values.reduce(0, +)
+        guard totalWins > 0 else { return nil }
+        let totalFlawless = stats.flawlessWins.values.reduce(0, +)
+        return Int((Double(totalFlawless) / Double(totalWins)) * 100)
+    }
+
     var body: some View {
         NavigationStack {
             Group {
                 if stats.gamesPlayed == 0 {
                     emptyState
                 } else {
-                    statsList
+                    statsForm(liveData)
                 }
             }
             .navigationTitle("Profile")
@@ -25,6 +65,16 @@ struct ProfileView: View {
     }
 
     private var emptyState: some View {
+        ZStack {
+            statsForm(Self.demoData)
+                .opacity(0.3)
+                .allowsHitTesting(false)
+
+            emptyStateCard
+        }
+    }
+
+    private var emptyStateCard: some View {
         VStack(spacing: 16) {
             Image(systemName: "person.crop.circle")
                 .font(.system(size: 56))
@@ -33,11 +83,10 @@ struct ProfileView: View {
             Text("No games played yet")
                 .font(.headline)
 
-            Text("Finish your first puzzle to start tracking stats.")
+            Text("Finish your first puzzle to start tracking stats like these.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
 
             Button("Start Game") {
                 dismiss()
@@ -47,24 +96,37 @@ struct ProfileView: View {
             .controlSize(.large)
             .padding(.top, 8)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .padding(24)
+        .frame(maxWidth: 300)
+        .background(
+            ZStack {
+                RoundedRectangle(cornerRadius: 20).fill(.thickMaterial)
+                RoundedRectangle(cornerRadius: 20).fill(Color.black.opacity(0.12))
+            }
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 20)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 1)
+        )
+        .shadow(color: Color.black.opacity(0.15), radius: 20, y: 8)
+        .padding(.horizontal, 32)
     }
 
-    private var statsList: some View {
+    private func statsForm(_ data: ProfileDisplayData) -> some View {
         Form {
             Section {
                 HStack {
                     Text("Games Played")
                     Spacer()
-                    Text("\(stats.gamesPlayed)")
+                    Text("\(data.gamesPlayed)")
                         .foregroundStyle(.secondary)
                 }
             }
 
             Section {
                 HStack(spacing: 12) {
-                    streakBlock(title: "Current Streak", value: stats.currentStreak)
-                    streakBlock(title: "Best Streak", value: stats.bestStreak)
+                    streakBlock(title: "Current Streak", value: data.currentStreak)
+                    streakBlock(title: "Best Streak", value: data.bestStreak)
                 }
             }
 
@@ -74,7 +136,7 @@ struct ProfileView: View {
                         HStack {
                             Text(difficulty.displayName)
                             Spacer()
-                            if let seconds = stats.bestTime[difficulty] {
+                            if let seconds = data.bestTime[difficulty] {
                                 Text(GameState.formatted(seconds))
                                     .foregroundStyle(.secondary)
                             } else {
@@ -83,10 +145,10 @@ struct ProfileView: View {
                             }
                         }
 
-                        if let wins = stats.wins[difficulty], wins > 0 {
+                        if let wins = data.wins[difficulty], wins > 0 {
                             HStack(spacing: 6) {
                                 Text("\(wins) win\(wins == 1 ? "" : "s")")
-                                if let avg = stats.averageTime(for: difficulty) {
+                                if let avg = data.averageTime[difficulty] {
                                     Text("· avg \(GameState.formatted(avg))")
                                 }
                             }
@@ -101,7 +163,7 @@ struct ProfileView: View {
                 HStack {
                     Text("Flawless Wins")
                     Spacer()
-                    if let percentage = overallFlawlessPercentage {
+                    if let percentage = data.flawlessPercentage {
                         Text("\(percentage)%")
                             .foregroundStyle(.secondary)
                     } else {
@@ -112,18 +174,11 @@ struct ProfileView: View {
                 HStack {
                     Text("Avg. Mistakes per Game")
                     Spacer()
-                    Text(String(format: "%.1f", stats.averageMistakes()))
+                    Text(String(format: "%.1f", data.averageMistakes))
                         .foregroundStyle(.secondary)
                 }
             }
         }
-    }
-
-    private var overallFlawlessPercentage: Int? {
-        let totalWins = stats.wins.values.reduce(0, +)
-        guard totalWins > 0 else { return nil }
-        let totalFlawless = stats.flawlessWins.values.reduce(0, +)
-        return Int((Double(totalFlawless) / Double(totalWins)) * 100)
     }
 
     private func streakBlock(title: String, value: Int) -> some View {
@@ -138,6 +193,17 @@ struct ProfileView: View {
         .padding(.vertical, 8)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
     }
+}
+
+private struct ProfileDisplayData {
+    var gamesPlayed: Int
+    var currentStreak: Int
+    var bestStreak: Int
+    var bestTime: [Difficulty: Int]
+    var wins: [Difficulty: Int]
+    var averageTime: [Difficulty: Int]
+    var flawlessPercentage: Int?
+    var averageMistakes: Double
 }
 
 #Preview {

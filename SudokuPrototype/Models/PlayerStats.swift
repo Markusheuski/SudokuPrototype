@@ -31,7 +31,7 @@ final class PlayerStats: ObservableObject {
             currentStreak = 0
             bestStreak = 0
             bestTime = [:]
-            unlockedDifficulties = [.easy]
+            unlockedDifficulties = [.easy, .medium]
             wins = [:]
             totalTime = [:]
             totalMistakes = 0
@@ -87,6 +87,21 @@ final class PlayerStats: ObservableObject {
         return Int((Double(flawlessWins[difficulty] ?? 0) / Double(w)) * 100)
     }
 
+    #if DEBUG
+    func resetAll() {
+        gamesPlayed = 0
+        currentStreak = 0
+        bestStreak = 0
+        bestTime = [:]
+        unlockedDifficulties = [.easy, .medium]
+        wins = [:]
+        totalTime = [:]
+        totalMistakes = 0
+        flawlessWins = [:]
+        persist()
+    }
+    #endif
+
     private struct Snapshot: Codable {
         var gamesPlayed: Int
         var currentStreak: Int
@@ -127,12 +142,15 @@ final class PlayerStats: ObservableObject {
             bestStreak = try container.decode(Int.self, forKey: .bestStreak)
             bestTime = try container.decode([Difficulty: Int].self, forKey: .bestTime)
             if let unlocked = try container.decodeIfPresent(Set<Difficulty>.self, forKey: .unlockedDifficulties) {
-                unlockedDifficulties = unlocked
+                // Medium is now unlocked by default too; union rather than
+                // replace so anyone who'd already unlocked further (Hard,
+                // Expert) under the old rules keeps that progress.
+                unlockedDifficulties = unlocked.union([.easy, .medium])
             } else {
                 // Migrating from before difficulty unlocking existed: unlock
                 // whatever was already beaten, plus one level past that,
                 // instead of relocking progress the player already has.
-                var unlocked: Set<Difficulty> = [.easy]
+                var unlocked: Set<Difficulty> = [.easy, .medium]
                 for difficulty in Difficulty.allCases where bestTime[difficulty] != nil {
                     unlocked.insert(difficulty)
                     if let next = difficulty.next {

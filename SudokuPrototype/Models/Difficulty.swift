@@ -32,7 +32,7 @@ enum Difficulty: String, CaseIterable, Codable, Identifiable, Equatable, Hashabl
 
     var next: Difficulty? {
         switch self {
-        case .easy: return .medium
+        case .easy: return nil
         case .medium: return .hard
         case .hard: return .expert
         case .expert: return nil

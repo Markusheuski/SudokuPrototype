@@ -38,6 +38,14 @@ final class ThemeManager: ObservableObject {
         transition { self.selectedVariant = variant }
     }
 
+    #if DEBUG
+    func resetToDefaults() {
+        appearanceMode = .system
+        selectedVariant = .graphite
+        isDimmed = false
+    }
+    #endif
+
     private func transition(_ change: @escaping () -> Void) {
         withAnimation(.easeInOut(duration: 0.15)) {
             isDimmed = true
