@@ -70,20 +70,60 @@ struct ProfileView: View {
 
             Section("Best Time") {
                 ForEach(Difficulty.allCases) { difficulty in
-                    HStack {
-                        Text(difficulty.displayName)
-                        Spacer()
-                        if let seconds = stats.bestTime[difficulty] {
-                            Text(GameState.formatted(seconds))
-                                .foregroundStyle(.secondary)
-                        } else {
-                            Text("—")
-                                .foregroundStyle(.secondary)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack {
+                            Text(difficulty.displayName)
+                            Spacer()
+                            if let seconds = stats.bestTime[difficulty] {
+                                Text(GameState.formatted(seconds))
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("—")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+
+                        if let wins = stats.wins[difficulty], wins > 0 {
+                            HStack(spacing: 6) {
+                                Text("\(wins) win\(wins == 1 ? "" : "s")")
+                                if let avg = stats.averageTime(for: difficulty) {
+                                    Text("· avg \(GameState.formatted(avg))")
+                                }
+                            }
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         }
                     }
                 }
             }
+
+            Section("Accuracy") {
+                HStack {
+                    Text("Flawless Wins")
+                    Spacer()
+                    if let percentage = overallFlawlessPercentage {
+                        Text("\(percentage)%")
+                            .foregroundStyle(.secondary)
+                    } else {
+                        Text("—")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                HStack {
+                    Text("Avg. Mistakes per Game")
+                    Spacer()
+                    Text(String(format: "%.1f", stats.averageMistakes()))
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
+    }
+
+    private var overallFlawlessPercentage: Int? {
+        let totalWins = stats.wins.values.reduce(0, +)
+        guard totalWins > 0 else { return nil }
+        let totalFlawless = stats.flawlessWins.values.reduce(0, +)
+        return Int((Double(totalFlawless) / Double(totalWins)) * 100)
     }
 
     private func streakBlock(title: String, value: Int) -> some View {

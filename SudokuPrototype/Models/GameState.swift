@@ -191,7 +191,7 @@ final class GameState: ObservableObject {
         isGameOver = true
         stopTimer()
         HapticManager.shared.gameOver()
-        PlayerStats.shared.recordLoss()
+        PlayerStats.shared.recordLoss(mistakes: mistakes)
     }
 
     private func checkSolved() {
@@ -199,7 +199,7 @@ final class GameState: ObservableObject {
         if isSolved {
             stopTimer()
             HapticManager.shared.win()
-            PlayerStats.shared.recordWin(difficulty: difficulty, elapsedSeconds: elapsedSeconds)
+            PlayerStats.shared.recordWin(difficulty: difficulty, elapsedSeconds: elapsedSeconds, mistakes: mistakes)
         }
     }
 
