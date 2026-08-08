@@ -88,7 +88,7 @@ struct ContentView: View {
                         .font(.system(size: 48))
                         .foregroundStyle(game.isSolved ? Color.green : Color.red)
 
-                    Text(game.isSolved ? "Solved!" : "Out of mistakes")
+                    Text(game.isSolved ? "Solved!" : lossTitle)
                         .font(.title2.bold())
 
                     Text(GameState.formatted(game.elapsedSeconds))
@@ -119,6 +119,10 @@ struct ContentView: View {
             }
     }
 
+    private var lossTitle: String {
+        game.mode == .classic ? "Out of mistakes" : "Not quite right"
+    }
+
     private var topBar: some View {
         HStack {
             backButton
@@ -127,9 +131,22 @@ struct ContentView: View {
             Spacer()
             if game.mode == .classic {
                 mistakesBadge
+            } else if game.isBoardFull {
+                checkButton
             }
         }
         .padding(.horizontal)
+    }
+
+    private var checkButton: some View {
+        Button {
+            game.checkFreestyleSolution()
+        } label: {
+            Text("Check")
+                .font(.subheadline.weight(.semibold))
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(palette.accent)
     }
 
     private var timerControl: some View {

@@ -136,11 +136,11 @@ final class GameState: ObservableObject {
             }
         case .freestyle:
             // No live correctness check: accept whatever the player enters,
-            // freely overwritable, and only ever resolve via an exact match.
+            // freely overwritable. Resolution only happens via an explicit
+            // Check (see checkFreestyleSolution()), not on every entry.
             board[cell.row][cell.col] = value
             notes[cell.row][cell.col].removeAll()
             HapticManager.shared.correctEntry()
-            checkSolved()
         }
 
         persist()
@@ -195,14 +195,22 @@ final class GameState: ObservableObject {
         persist()
     }
 
-    private func triggerGameOver() {
+    /// Overwrites every non-given cell that doesn't already match the
+    /// solution (empty or wrong) with the correct value. Covers both
+    /// Classic (cells are only ever empty or right, never wrong) and
+    /// Freestyle (cells can be wrong too, since nothing blocks bad entries).
+    private func revealSolution() {
         for r in 0..<9 {
-            for c in 0..<9 where board[r][c] == 0 {
+            for c in 0..<9 where !givenMask[r][c] && board[r][c] != solution[r][c] {
                 board[r][c] = solution[r][c]
                 revealedMask[r][c] = true
             }
         }
         selected = nil
+    }
+
+    private func triggerGameOver() {
+        revealSolution()
         isGameOver = true
         stopTimer()
         HapticManager.shared.gameOver()
@@ -216,6 +224,30 @@ final class GameState: ObservableObject {
             HapticManager.shared.win()
             PlayerStats.shared.recordWin(mode: mode, difficulty: difficulty, elapsedSeconds: elapsedSeconds, mistakes: mistakes)
         }
+    }
+
+    var isBoardFull: Bool {
+        board.allSatisfy { row in !row.contains(0) }
+    }
+
+    /// Freestyle's explicit resolution step — nothing here happens
+    /// automatically on entry, only when the player taps Check.
+    func checkFreestyleSolution() {
+        guard mode == .freestyle, !isGameOver, !isSolved else { return }
+
+        if board == solution {
+            isSolved = true
+            stopTimer()
+            HapticManager.shared.win()
+            PlayerStats.shared.recordWin(mode: .freestyle, difficulty: difficulty, elapsedSeconds: elapsedSeconds, mistakes: mistakes)
+        } else {
+            revealSolution()
+            isGameOver = true
+            stopTimer()
+            HapticManager.shared.gameOver()
+            PlayerStats.shared.recordLoss(mode: .freestyle, mistakes: mistakes)
+        }
+        persist()
     }
 
     // MARK: - Persistence
