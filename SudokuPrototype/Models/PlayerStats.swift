@@ -1,157 +1,167 @@
 import Foundation
 
+struct ModeStats: Codable {
+    var gamesPlayed = 0
+    var wins: [Difficulty: Int] = [:]
+    var bestTime: [Difficulty: Int] = [:]
+    var totalTime: [Difficulty: Int] = [:]
+    var currentStreak = 0
+    var bestStreak = 0
+    var flawlessWins: [Difficulty: Int] = [:] // not applicable to freestyle, left empty
+    var totalMistakes = 0 // not applicable to freestyle, left at 0
+}
+
 final class PlayerStats: ObservableObject {
     static let shared = PlayerStats()
 
-    @Published var gamesPlayed: Int
-    @Published var currentStreak: Int
-    @Published var bestStreak: Int
-    @Published var bestTime: [Difficulty: Int]
+    @Published var classic: ModeStats
+    @Published var freestyle: ModeStats
     @Published var unlockedDifficulties: Set<Difficulty>
-    @Published var wins: [Difficulty: Int]
-    @Published var totalTime: [Difficulty: Int]
-    @Published var totalMistakes: Int
-    @Published var flawlessWins: [Difficulty: Int]
 
     private static let storageKey = "sudoku.playerStats"
 
     private init() {
         if let snapshot = PlayerStats.loadSnapshot() {
-            gamesPlayed = snapshot.gamesPlayed
-            currentStreak = snapshot.currentStreak
-            bestStreak = snapshot.bestStreak
-            bestTime = snapshot.bestTime
+            classic = snapshot.classic
+            freestyle = snapshot.freestyle
             unlockedDifficulties = snapshot.unlockedDifficulties
-            wins = snapshot.wins
-            totalTime = snapshot.totalTime
-            totalMistakes = snapshot.totalMistakes
-            flawlessWins = snapshot.flawlessWins
         } else {
-            gamesPlayed = 0
-            currentStreak = 0
-            bestStreak = 0
-            bestTime = [:]
+            classic = ModeStats()
+            freestyle = ModeStats()
             unlockedDifficulties = [.easy, .medium]
-            wins = [:]
-            totalTime = [:]
-            totalMistakes = 0
-            flawlessWins = [:]
         }
     }
 
-    func recordWin(difficulty: Difficulty, elapsedSeconds: Int, mistakes: Int) {
-        gamesPlayed += 1
-        currentStreak += 1
-        bestStreak = max(bestStreak, currentStreak)
+    func recordWin(mode: GameMode, difficulty: Difficulty, elapsedSeconds: Int, mistakes: Int) {
+        let isFirstWinOnDifficulty = classic.bestTime[difficulty] == nil && freestyle.bestTime[difficulty] == nil
 
-        let isFirstWinOnDifficulty = bestTime[difficulty] == nil
-        if let existing = bestTime[difficulty] {
-            bestTime[difficulty] = min(existing, elapsedSeconds)
-        } else {
-            bestTime[difficulty] = elapsedSeconds
+        switch mode {
+        case .classic:
+            classic.gamesPlayed += 1
+            classic.currentStreak += 1
+            classic.bestStreak = max(classic.bestStreak, classic.currentStreak)
+            if let existing = classic.bestTime[difficulty] {
+                classic.bestTime[difficulty] = min(existing, elapsedSeconds)
+            } else {
+                classic.bestTime[difficulty] = elapsedSeconds
+            }
+            classic.wins[difficulty, default: 0] += 1
+            classic.totalTime[difficulty, default: 0] += elapsedSeconds
+            classic.totalMistakes += mistakes
+            if mistakes == 0 {
+                classic.flawlessWins[difficulty, default: 0] += 1
+            }
+        case .freestyle:
+            freestyle.gamesPlayed += 1
+            freestyle.currentStreak += 1
+            freestyle.bestStreak = max(freestyle.bestStreak, freestyle.currentStreak)
+            if let existing = freestyle.bestTime[difficulty] {
+                freestyle.bestTime[difficulty] = min(existing, elapsedSeconds)
+            } else {
+                freestyle.bestTime[difficulty] = elapsedSeconds
+            }
+            freestyle.wins[difficulty, default: 0] += 1
+            freestyle.totalTime[difficulty, default: 0] += elapsedSeconds
         }
 
         if isFirstWinOnDifficulty, let next = difficulty.next {
             unlockedDifficulties.insert(next)
         }
 
-        wins[difficulty, default: 0] += 1
-        totalTime[difficulty, default: 0] += elapsedSeconds
-        totalMistakes += mistakes
-        if mistakes == 0 {
-            flawlessWins[difficulty, default: 0] += 1
+        persist()
+    }
+
+    func recordLoss(mode: GameMode, mistakes: Int) {
+        switch mode {
+        case .classic:
+            classic.gamesPlayed += 1
+            classic.currentStreak = 0
+            classic.totalMistakes += mistakes
+        case .freestyle:
+            freestyle.gamesPlayed += 1
+            freestyle.currentStreak = 0
         }
-
         persist()
     }
 
-    func recordLoss(mistakes: Int) {
-        gamesPlayed += 1
-        currentStreak = 0
-        totalMistakes += mistakes
-        persist()
+    func averageTime(for difficulty: Difficulty, mode: GameMode) -> Int? {
+        let stats = mode == .classic ? classic : freestyle
+        guard let w = stats.wins[difficulty], w > 0 else { return nil }
+        return (stats.totalTime[difficulty] ?? 0) / w
     }
 
-    func averageTime(for difficulty: Difficulty) -> Int? {
-        guard let w = wins[difficulty], w > 0 else { return nil }
-        return (totalTime[difficulty] ?? 0) / w
+    func averageMistakes(mode: GameMode) -> Double {
+        let stats = mode == .classic ? classic : freestyle
+        guard stats.gamesPlayed > 0 else { return 0 }
+        return Double(stats.totalMistakes) / Double(stats.gamesPlayed)
     }
 
-    func averageMistakes() -> Double {
-        guard gamesPlayed > 0 else { return 0 }
-        return Double(totalMistakes) / Double(gamesPlayed)
-    }
-
-    func flawlessWinPercentage(for difficulty: Difficulty) -> Int? {
-        guard let w = wins[difficulty], w > 0 else { return nil }
-        return Int((Double(flawlessWins[difficulty] ?? 0) / Double(w)) * 100)
+    func flawlessWinPercentage(for difficulty: Difficulty, mode: GameMode) -> Int? {
+        let stats = mode == .classic ? classic : freestyle
+        guard let w = stats.wins[difficulty], w > 0 else { return nil }
+        return Int((Double(stats.flawlessWins[difficulty] ?? 0) / Double(w)) * 100)
     }
 
     #if DEBUG
     func resetAll() {
-        gamesPlayed = 0
-        currentStreak = 0
-        bestStreak = 0
-        bestTime = [:]
+        classic = ModeStats()
+        freestyle = ModeStats()
         unlockedDifficulties = [.easy, .medium]
-        wins = [:]
-        totalTime = [:]
-        totalMistakes = 0
-        flawlessWins = [:]
         persist()
     }
     #endif
 
     private struct Snapshot: Codable {
-        var gamesPlayed: Int
-        var currentStreak: Int
-        var bestStreak: Int
-        var bestTime: [Difficulty: Int]
+        var classic: ModeStats
+        var freestyle: ModeStats
         var unlockedDifficulties: Set<Difficulty>
-        var wins: [Difficulty: Int]
-        var totalTime: [Difficulty: Int]
-        var totalMistakes: Int
-        var flawlessWins: [Difficulty: Int]
 
-        init(
-            gamesPlayed: Int,
-            currentStreak: Int,
-            bestStreak: Int,
-            bestTime: [Difficulty: Int],
-            unlockedDifficulties: Set<Difficulty>,
-            wins: [Difficulty: Int],
-            totalTime: [Difficulty: Int],
-            totalMistakes: Int,
-            flawlessWins: [Difficulty: Int]
-        ) {
-            self.gamesPlayed = gamesPlayed
-            self.currentStreak = currentStreak
-            self.bestStreak = bestStreak
-            self.bestTime = bestTime
+        init(classic: ModeStats, freestyle: ModeStats, unlockedDifficulties: Set<Difficulty>) {
+            self.classic = classic
+            self.freestyle = freestyle
             self.unlockedDifficulties = unlockedDifficulties
-            self.wins = wins
-            self.totalTime = totalTime
-            self.totalMistakes = totalMistakes
-            self.flawlessWins = flawlessWins
+        }
+
+        /// Pre-game-modes flat schema, kept only to migrate old saves.
+        private enum LegacyCodingKeys: String, CodingKey {
+            case gamesPlayed, currentStreak, bestStreak, bestTime
+            case wins, totalTime, totalMistakes, flawlessWins
+            case unlockedDifficulties
         }
 
         init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            gamesPlayed = try container.decode(Int.self, forKey: .gamesPlayed)
-            currentStreak = try container.decode(Int.self, forKey: .currentStreak)
-            bestStreak = try container.decode(Int.self, forKey: .bestStreak)
-            bestTime = try container.decode([Difficulty: Int].self, forKey: .bestTime)
-            if let unlocked = try container.decodeIfPresent(Set<Difficulty>.self, forKey: .unlockedDifficulties) {
-                // Medium is now unlocked by default too; union rather than
-                // replace so anyone who'd already unlocked further (Hard,
-                // Expert) under the old rules keeps that progress.
+
+            if let decodedClassic = try container.decodeIfPresent(ModeStats.self, forKey: .classic) {
+                classic = decodedClassic
+                freestyle = try container.decodeIfPresent(ModeStats.self, forKey: .freestyle) ?? ModeStats()
+                unlockedDifficulties = try container.decodeIfPresent(Set<Difficulty>.self, forKey: .unlockedDifficulties)
+                    ?? [.easy, .medium]
+                return
+            }
+
+            // Migrating from before game modes existed: every past game was
+            // effectively Classic, so fold the old flat fields in there and
+            // start Freestyle from zero.
+            let legacy = try decoder.container(keyedBy: LegacyCodingKeys.self)
+            var migratedClassic = ModeStats()
+            migratedClassic.gamesPlayed = try legacy.decodeIfPresent(Int.self, forKey: .gamesPlayed) ?? 0
+            migratedClassic.currentStreak = try legacy.decodeIfPresent(Int.self, forKey: .currentStreak) ?? 0
+            migratedClassic.bestStreak = try legacy.decodeIfPresent(Int.self, forKey: .bestStreak) ?? 0
+            migratedClassic.bestTime = try legacy.decodeIfPresent([Difficulty: Int].self, forKey: .bestTime) ?? [:]
+            migratedClassic.wins = try legacy.decodeIfPresent([Difficulty: Int].self, forKey: .wins) ?? [:]
+            migratedClassic.totalTime = try legacy.decodeIfPresent([Difficulty: Int].self, forKey: .totalTime) ?? [:]
+            migratedClassic.totalMistakes = try legacy.decodeIfPresent(Int.self, forKey: .totalMistakes) ?? 0
+            migratedClassic.flawlessWins = try legacy.decodeIfPresent([Difficulty: Int].self, forKey: .flawlessWins) ?? [:]
+
+            classic = migratedClassic
+            freestyle = ModeStats()
+
+            if let unlocked = try legacy.decodeIfPresent(Set<Difficulty>.self, forKey: .unlockedDifficulties) {
                 unlockedDifficulties = unlocked.union([.easy, .medium])
             } else {
-                // Migrating from before difficulty unlocking existed: unlock
-                // whatever was already beaten, plus one level past that,
-                // instead of relocking progress the player already has.
                 var unlocked: Set<Difficulty> = [.easy, .medium]
-                for difficulty in Difficulty.allCases where bestTime[difficulty] != nil {
+                for difficulty in Difficulty.allCases where migratedClassic.bestTime[difficulty] != nil {
                     unlocked.insert(difficulty)
                     if let next = difficulty.next {
                         unlocked.insert(next)
@@ -159,28 +169,11 @@ final class PlayerStats: ObservableObject {
                 }
                 unlockedDifficulties = unlocked
             }
-            // Migrating from before win/mistake breakdowns existed: default
-            // to empty/zero rather than failing to decode and losing every
-            // other stat (games played, streaks, best times, unlocks).
-            wins = try container.decodeIfPresent([Difficulty: Int].self, forKey: .wins) ?? [:]
-            totalTime = try container.decodeIfPresent([Difficulty: Int].self, forKey: .totalTime) ?? [:]
-            totalMistakes = try container.decodeIfPresent(Int.self, forKey: .totalMistakes) ?? 0
-            flawlessWins = try container.decodeIfPresent([Difficulty: Int].self, forKey: .flawlessWins) ?? [:]
         }
     }
 
     private func persist() {
-        let snapshot = Snapshot(
-            gamesPlayed: gamesPlayed,
-            currentStreak: currentStreak,
-            bestStreak: bestStreak,
-            bestTime: bestTime,
-            unlockedDifficulties: unlockedDifficulties,
-            wins: wins,
-            totalTime: totalTime,
-            totalMistakes: totalMistakes,
-            flawlessWins: flawlessWins
-        )
+        let snapshot = Snapshot(classic: classic, freestyle: freestyle, unlockedDifficulties: unlockedDifficulties)
         guard let data = try? JSONEncoder().encode(snapshot) else { return }
         UserDefaults.standard.set(data, forKey: Self.storageKey)
     }

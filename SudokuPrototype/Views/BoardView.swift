@@ -115,8 +115,7 @@ struct BoardView: View {
         }
 
         let sameRowOrCol = sel.row == row || sel.col == col
-        let sameBlock = sel.row / 3 == row / 3 && sel.col / 3 == col / 3
-        if sameRowOrCol || sameBlock {
+        if sameRowOrCol {
             return .peer
         }
 

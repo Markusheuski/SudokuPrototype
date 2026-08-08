@@ -10,7 +10,8 @@ struct StartView: View {
     @State private var showProfile = false
     @State private var lockedHintText: String?
     @AppStorage("selectedDifficulty") private var selectedDifficulty: Difficulty = .medium
-    let onStart: (Difficulty) -> Void
+    @AppStorage("selectedGameMode") private var selectedMode: GameMode = .classic
+    let onStart: (Difficulty, GameMode) -> Void
     let onContinue: () -> Void
 
     private let controlWidth: CGFloat = 300
@@ -70,8 +71,17 @@ struct StartView: View {
                     .opacity(lockedHintText == nil ? 0 : 1)
                     .frame(width: controlWidth, height: 16)
 
+                modePicker
+                    .frame(width: controlWidth)
+
+                Text("Classic tracks mistakes and counts toward your stats. Freestyle has no error limit and its own separate stats.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .frame(width: controlWidth)
+
                 Button("Start Game") {
-                    onStart(selectedDifficulty)
+                    onStart(selectedDifficulty, selectedMode)
                 }
                 .font(.title.bold())
                 .frame(width: controlWidth)
@@ -91,10 +101,35 @@ struct StartView: View {
         }
         .sheet(isPresented: $showProfile) {
             ProfileView(stats: PlayerStats.shared) {
-                onStart(selectedDifficulty)
+                onStart(selectedDifficulty, selectedMode)
             }
             .environment(\.colorScheme, colorScheme)
+            .environment(\.palette, palette)
         }
+    }
+
+    private var modePicker: some View {
+        HStack(spacing: 4) {
+            ForEach(GameMode.allCases) { mode in
+                let isSelected = mode == selectedMode
+                Button {
+                    selectedMode = mode
+                } label: {
+                    Text(mode.displayName)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            isSelected ? palette.accent : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 10)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
     }
 
     private var difficultyPicker: some View {
@@ -148,5 +183,5 @@ struct StartView: View {
 }
 
 #Preview {
-    StartView(theme: ThemeManager(), game: GameState(), onStart: { _ in }, onContinue: {})
+    StartView(theme: ThemeManager(), game: GameState(), onStart: { _, _ in }, onContinue: {})
 }

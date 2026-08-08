@@ -125,7 +125,9 @@ struct ContentView: View {
             Spacer()
             timerControl
             Spacer()
-            mistakesBadge
+            if game.mode == .classic {
+                mistakesBadge
+            }
         }
         .padding(.horizontal)
     }

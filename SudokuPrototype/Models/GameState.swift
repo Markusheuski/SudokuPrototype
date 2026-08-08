@@ -19,16 +19,19 @@ final class GameState: ObservableObject {
 
     var maxMistakes: Int { difficulty.maxMistakes }
     private(set) var difficulty: Difficulty
+    private(set) var mode: GameMode
     private var timer: Timer?
 
     var hasProgress: Bool {
         elapsedSeconds > 0 && !isSolved && !isGameOver
     }
 
-    init(difficulty: Difficulty = .medium) {
+    init(difficulty: Difficulty = .medium, mode: GameMode = .classic) {
         self.difficulty = difficulty
+        self.mode = mode
         if let snapshot = GameState.loadSnapshot(), !snapshot.isSolved, !snapshot.isGameOver {
             self.difficulty = snapshot.difficulty
+            self.mode = snapshot.mode
             board = snapshot.board
             solution = snapshot.solution
             givenMask = snapshot.givenMask
@@ -58,11 +61,12 @@ final class GameState: ObservableObject {
     }
 
     func reset() {
-        reset(difficulty: difficulty)
+        reset(difficulty: difficulty, mode: mode)
     }
 
-    func reset(difficulty newDifficulty: Difficulty) {
+    func reset(difficulty newDifficulty: Difficulty, mode newMode: GameMode) {
         difficulty = newDifficulty
+        mode = newMode
         let generated = SudokuGenerator.generatePuzzle(clues: newDifficulty.clueCount)
         board = generated.puzzle
         solution = generated.solution
@@ -103,7 +107,6 @@ final class GameState: ObservableObject {
 
     func enter(value: Int) {
         guard let cell = selected, !givenMask[cell.row][cell.col], !isGameOver, !isPaused else { return }
-        guard !excludedDigits[cell.row][cell.col].contains(value) else { return }
 
         if isPencilMode {
             if notes[cell.row][cell.col].contains(value) {
@@ -115,19 +118,31 @@ final class GameState: ObservableObject {
             return
         }
 
-        if value == solution[cell.row][cell.col] {
+        switch mode {
+        case .classic:
+            guard !excludedDigits[cell.row][cell.col].contains(value) else { return }
+            if value == solution[cell.row][cell.col] {
+                board[cell.row][cell.col] = value
+                notes[cell.row][cell.col].removeAll()
+                HapticManager.shared.correctEntry()
+                checkSolved()
+            } else {
+                excludedDigits[cell.row][cell.col].insert(value)
+                mistakes += 1
+                HapticManager.shared.wrongEntry()
+                if mistakes >= maxMistakes {
+                    triggerGameOver()
+                }
+            }
+        case .freestyle:
+            // No live correctness check: accept whatever the player enters,
+            // freely overwritable, and only ever resolve via an exact match.
             board[cell.row][cell.col] = value
             notes[cell.row][cell.col].removeAll()
             HapticManager.shared.correctEntry()
             checkSolved()
-        } else {
-            excludedDigits[cell.row][cell.col].insert(value)
-            mistakes += 1
-            HapticManager.shared.wrongEntry()
-            if mistakes >= maxMistakes {
-                triggerGameOver()
-            }
         }
+
         persist()
     }
 
@@ -191,7 +206,7 @@ final class GameState: ObservableObject {
         isGameOver = true
         stopTimer()
         HapticManager.shared.gameOver()
-        PlayerStats.shared.recordLoss(mistakes: mistakes)
+        PlayerStats.shared.recordLoss(mode: mode, mistakes: mistakes)
     }
 
     private func checkSolved() {
@@ -199,7 +214,7 @@ final class GameState: ObservableObject {
         if isSolved {
             stopTimer()
             HapticManager.shared.win()
-            PlayerStats.shared.recordWin(difficulty: difficulty, elapsedSeconds: elapsedSeconds, mistakes: mistakes)
+            PlayerStats.shared.recordWin(mode: mode, difficulty: difficulty, elapsedSeconds: elapsedSeconds, mistakes: mistakes)
         }
     }
 
@@ -209,6 +224,7 @@ final class GameState: ObservableObject {
 
     private struct Snapshot: Codable {
         var difficulty: Difficulty
+        var mode: GameMode
         var board: [[Int]]
         var solution: [[Int]]
         var givenMask: [[Bool]]
@@ -223,11 +239,69 @@ final class GameState: ObservableObject {
         var elapsedSeconds: Int
         var selectedRow: Int?
         var selectedCol: Int?
+
+        init(
+            difficulty: Difficulty,
+            mode: GameMode,
+            board: [[Int]],
+            solution: [[Int]],
+            givenMask: [[Bool]],
+            notes: [[Set<Int>]],
+            excludedDigits: [[Set<Int>]],
+            revealedMask: [[Bool]],
+            mistakes: Int,
+            isSolved: Bool,
+            isGameOver: Bool,
+            isPencilMode: Bool,
+            isPaused: Bool,
+            elapsedSeconds: Int,
+            selectedRow: Int?,
+            selectedCol: Int?
+        ) {
+            self.difficulty = difficulty
+            self.mode = mode
+            self.board = board
+            self.solution = solution
+            self.givenMask = givenMask
+            self.notes = notes
+            self.excludedDigits = excludedDigits
+            self.revealedMask = revealedMask
+            self.mistakes = mistakes
+            self.isSolved = isSolved
+            self.isGameOver = isGameOver
+            self.isPencilMode = isPencilMode
+            self.isPaused = isPaused
+            self.elapsedSeconds = elapsedSeconds
+            self.selectedRow = selectedRow
+            self.selectedCol = selectedCol
+        }
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            difficulty = try container.decode(Difficulty.self, forKey: .difficulty)
+            // Saves from before game modes existed predate this key.
+            mode = try container.decodeIfPresent(GameMode.self, forKey: .mode) ?? .classic
+            board = try container.decode([[Int]].self, forKey: .board)
+            solution = try container.decode([[Int]].self, forKey: .solution)
+            givenMask = try container.decode([[Bool]].self, forKey: .givenMask)
+            notes = try container.decode([[Set<Int>]].self, forKey: .notes)
+            excludedDigits = try container.decode([[Set<Int>]].self, forKey: .excludedDigits)
+            revealedMask = try container.decode([[Bool]].self, forKey: .revealedMask)
+            mistakes = try container.decode(Int.self, forKey: .mistakes)
+            isSolved = try container.decode(Bool.self, forKey: .isSolved)
+            isGameOver = try container.decode(Bool.self, forKey: .isGameOver)
+            isPencilMode = try container.decode(Bool.self, forKey: .isPencilMode)
+            isPaused = try container.decode(Bool.self, forKey: .isPaused)
+            elapsedSeconds = try container.decode(Int.self, forKey: .elapsedSeconds)
+            selectedRow = try container.decodeIfPresent(Int.self, forKey: .selectedRow)
+            selectedCol = try container.decodeIfPresent(Int.self, forKey: .selectedCol)
+        }
     }
 
     private func persist() {
         let snapshot = Snapshot(
             difficulty: difficulty,
+            mode: mode,
             board: board,
             solution: solution,
             givenMask: givenMask,

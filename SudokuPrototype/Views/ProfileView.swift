@@ -2,7 +2,9 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var stats: PlayerStats
+    @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
+    @State private var selectedMode: GameMode = .classic
     let onStartGame: () -> Void
 
     /// Hard-coded illustrative numbers for the empty-state preview —
@@ -19,39 +21,49 @@ struct ProfileView: View {
         averageMistakes: 0.8
     )
 
+    private var currentModeStats: ModeStats {
+        selectedMode == .classic ? stats.classic : stats.freestyle
+    }
+
     private var liveData: ProfileDisplayData {
+        let modeStats = currentModeStats
         var averages: [Difficulty: Int] = [:]
         for difficulty in Difficulty.allCases {
-            if let avg = stats.averageTime(for: difficulty) {
+            if let avg = stats.averageTime(for: difficulty, mode: selectedMode) {
                 averages[difficulty] = avg
             }
         }
         return ProfileDisplayData(
-            gamesPlayed: stats.gamesPlayed,
-            currentStreak: stats.currentStreak,
-            bestStreak: stats.bestStreak,
-            bestTime: stats.bestTime,
-            wins: stats.wins,
+            gamesPlayed: modeStats.gamesPlayed,
+            currentStreak: modeStats.currentStreak,
+            bestStreak: modeStats.bestStreak,
+            bestTime: modeStats.bestTime,
+            wins: modeStats.wins,
             averageTime: averages,
             flawlessPercentage: overallFlawlessPercentage,
-            averageMistakes: stats.averageMistakes()
+            averageMistakes: stats.averageMistakes(mode: selectedMode)
         )
     }
 
     private var overallFlawlessPercentage: Int? {
-        let totalWins = stats.wins.values.reduce(0, +)
+        let totalWins = currentModeStats.wins.values.reduce(0, +)
         guard totalWins > 0 else { return nil }
-        let totalFlawless = stats.flawlessWins.values.reduce(0, +)
+        let totalFlawless = currentModeStats.flawlessWins.values.reduce(0, +)
         return Int((Double(totalFlawless) / Double(totalWins)) * 100)
     }
 
     var body: some View {
         NavigationStack {
-            Group {
-                if stats.gamesPlayed == 0 {
-                    emptyState
-                } else {
-                    statsForm(liveData)
+            VStack(spacing: 0) {
+                modePicker
+                    .padding()
+
+                Group {
+                    if currentModeStats.gamesPlayed == 0 {
+                        emptyState
+                    } else {
+                        statsForm(liveData, mode: selectedMode)
+                    }
                 }
             }
             .navigationTitle("Profile")
@@ -64,9 +76,33 @@ struct ProfileView: View {
         }
     }
 
+    private var modePicker: some View {
+        HStack(spacing: 4) {
+            ForEach(GameMode.allCases) { mode in
+                let isSelected = mode == selectedMode
+                Button {
+                    selectedMode = mode
+                } label: {
+                    Text(mode.displayName)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color.white : Color.primary)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            isSelected ? palette.accent : Color.clear,
+                            in: RoundedRectangle(cornerRadius: 8)
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+    }
+
     private var emptyState: some View {
         ZStack {
-            statsForm(Self.demoData)
+            statsForm(Self.demoData, mode: selectedMode)
                 .opacity(0.3)
                 .allowsHitTesting(false)
 
@@ -112,7 +148,7 @@ struct ProfileView: View {
         .padding(.horizontal, 32)
     }
 
-    private func statsForm(_ data: ProfileDisplayData) -> some View {
+    private func statsForm(_ data: ProfileDisplayData, mode: GameMode) -> some View {
         Form {
             Section {
                 HStack {
@@ -159,23 +195,25 @@ struct ProfileView: View {
                 }
             }
 
-            Section("Accuracy") {
-                HStack {
-                    Text("Flawless Wins")
-                    Spacer()
-                    if let percentage = data.flawlessPercentage {
-                        Text("\(percentage)%")
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("—")
+            if mode == .classic {
+                Section("Accuracy") {
+                    HStack {
+                        Text("Flawless Wins")
+                        Spacer()
+                        if let percentage = data.flawlessPercentage {
+                            Text("\(percentage)%")
+                                .foregroundStyle(.secondary)
+                        } else {
+                            Text("—")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    HStack {
+                        Text("Avg. Mistakes per Game")
+                        Spacer()
+                        Text(String(format: "%.1f", data.averageMistakes))
                             .foregroundStyle(.secondary)
                     }
-                }
-                HStack {
-                    Text("Avg. Mistakes per Game")
-                    Spacer()
-                    Text(String(format: "%.1f", data.averageMistakes))
-                        .foregroundStyle(.secondary)
                 }
             }
         }
