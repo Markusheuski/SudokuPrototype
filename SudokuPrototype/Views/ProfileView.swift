@@ -5,7 +5,7 @@ struct ProfileView: View {
     @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
     @State private var selectedMode: GameMode = .classic
-    let onStartGame: () -> Void
+    let onStartGame: (GameMode) -> Void
 
     /// Hard-coded illustrative numbers for the empty-state preview —
     /// intentionally never derived from `stats`, so they can't drift into
@@ -126,7 +126,7 @@ struct ProfileView: View {
 
             Button("Start Game") {
                 dismiss()
-                onStartGame()
+                onStartGame(selectedMode)
             }
             .buttonStyle(.borderedProminent)
             .controlSize(.large)
@@ -245,5 +245,5 @@ private struct ProfileDisplayData {
 }
 
 #Preview {
-    ProfileView(stats: PlayerStats.shared, onStartGame: {})
+    ProfileView(stats: PlayerStats.shared, onStartGame: { _ in })
 }

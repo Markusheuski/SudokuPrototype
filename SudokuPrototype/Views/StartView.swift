@@ -51,7 +51,7 @@ struct StartView: View {
                         VStack(spacing: 4) {
                             Text("Continue Game")
                                 .font(.headline)
-                            Text("\(game.difficulty.displayName) · \(GameState.formatted(game.elapsedSeconds))")
+                            Text("\(game.difficulty.displayName) · \(game.mode.displayName) · \(GameState.formatted(game.elapsedSeconds))")
                                 .font(.subheadline.monospacedDigit())
                                 .foregroundStyle(.secondary)
                         }
@@ -74,7 +74,9 @@ struct StartView: View {
                 modePicker
                     .frame(width: controlWidth)
 
-                Text("Classic tracks mistakes and counts toward your stats. Freestyle has no error limit and its own separate stats.")
+                Text(selectedMode == .classic
+                    ? "Tracks mistakes — counts toward your stats."
+                    : "No error limit — has its own separate stats.")
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -100,8 +102,9 @@ struct StartView: View {
                 .environment(\.palette, palette)
         }
         .sheet(isPresented: $showProfile) {
-            ProfileView(stats: PlayerStats.shared) {
-                onStart(selectedDifficulty, selectedMode)
+            ProfileView(stats: PlayerStats.shared) { mode in
+                selectedMode = mode
+                onStart(selectedDifficulty, mode)
             }
             .environment(\.colorScheme, colorScheme)
             .environment(\.palette, palette)
