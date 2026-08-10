@@ -90,14 +90,14 @@ struct ProfileView: View {
                         .padding(.vertical, 10)
                         .background(
                             isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 8)
+                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                         )
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var emptyState: some View {
@@ -136,12 +136,12 @@ struct ProfileView: View {
         .frame(maxWidth: 300)
         .background(
             ZStack {
-                RoundedRectangle(cornerRadius: 20).fill(.thickMaterial)
-                RoundedRectangle(cornerRadius: 20).fill(Color.black.opacity(0.12))
+                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge).fill(.thickMaterial)
+                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge).fill(Color.black.opacity(0.12))
             }
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 20)
+            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
                 .stroke(Color.primary.opacity(0.08), lineWidth: 1)
         )
         .shadow(color: Color.black.opacity(0.15), radius: 20, y: 8)
@@ -229,7 +229,7 @@ struct ProfileView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
-        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 }
 

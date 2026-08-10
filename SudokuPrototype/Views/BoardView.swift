@@ -93,7 +93,8 @@ struct BoardView: View {
         ZStack {
             if value != 0 {
                 Text("\(value)")
-                    .font(.system(size: cellSize * 0.5, weight: isGiven ? .bold : .regular))
+                    .font(.system(size: cellSize * 0.5, weight: isGiven ? .bold : .semibold))
+                    .monospacedDigit()
                     .foregroundColor(isGiven || isRevealed ? palette.given : palette.accent)
             } else if !cellNotes.isEmpty {
                 NotesGridView(notes: cellNotes, cellSize: cellSize)
@@ -177,7 +178,8 @@ struct MiniBoardPreview: View {
                         ForEach(0..<count, id: \.self) { col in
                             let cell = cells[row][col]
                             Text(cell.value == 0 ? "" : "\(cell.value)")
-                                .font(.system(size: cellSize * 0.5, weight: cell.isAccent ? .regular : .bold))
+                                .font(.system(size: cellSize * 0.5, weight: cell.isAccent ? .semibold : .bold))
+                                .monospacedDigit()
                                 .foregroundColor(cell.isAccent ? palette.accent : palette.given)
                                 .frame(width: cellSize, height: cellSize)
                                 .background(palette.accent.opacity(cell.highlight.opacity))

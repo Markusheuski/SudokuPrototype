@@ -25,19 +25,35 @@ struct NumberPadView: View {
         let isExcluded = game.selected.map { game.excludedDigits[$0.row][$0.col].contains(number) } ?? false
         let isNoted = game.selected.map { game.notes[$0.row][$0.col].contains(number) } ?? false
         let isFilled = game.mode == .classic && game.placedCount(of: number) == 9
+        let isActiveNote = isNoted && game.isPencilMode
 
         return Button {
             game.enter(value: number)
         } label: {
             Text("\(number)")
-                .font(.title2)
+                .font(.title2.weight(.medium))
+                .monospacedDigit()
                 .strikethrough(isExcluded)
                 .frame(maxWidth: .infinity, minHeight: 44)
+                .foregroundColor(padTextColor(isFilled: isFilled, isExcluded: isExcluded, isActiveNote: isActiveNote))
+                .background(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        .fill(isActiveNote ? palette.accent : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        .stroke(palette.border, lineWidth: 0.5)
+                )
         }
-        .buttonStyle(.bordered)
-        .tint(isNoted && game.isPencilMode ? palette.accent : nil)
-        .foregroundColor(isFilled ? Color.secondary : (isExcluded ? Color.red.opacity(0.5) : nil))
+        .buttonStyle(PressableButtonStyle())
         .disabled(game.selected == nil || isExcluded || isFilled)
+    }
+
+    private func padTextColor(isFilled: Bool, isExcluded: Bool, isActiveNote: Bool) -> Color {
+        if isFilled { return .secondary }
+        if isExcluded { return .red.opacity(0.5) }
+        if isActiveNote { return .white }
+        return .primary
     }
 
     private var pencilButton: some View {
@@ -46,9 +62,17 @@ struct NumberPadView: View {
         } label: {
             Image(systemName: "pencil")
                 .frame(maxWidth: .infinity, minHeight: 44)
+                .foregroundColor(game.isPencilMode ? .white : .primary)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        .fill(game.isPencilMode ? palette.accent : Color.clear)
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        .stroke(palette.border, lineWidth: 0.5)
+                )
         }
-        .buttonStyle(.bordered)
-        .tint(game.isPencilMode ? palette.accent : nil)
+        .buttonStyle(PressableButtonStyle())
     }
 
     private var clearButton: some View {
@@ -57,8 +81,13 @@ struct NumberPadView: View {
         } label: {
             Image(systemName: "delete.left")
                 .frame(maxWidth: .infinity, minHeight: 44)
+                .foregroundColor(.primary)
+                .overlay(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        .stroke(palette.border, lineWidth: 0.5)
+                )
         }
-        .buttonStyle(.bordered)
+        .buttonStyle(PressableButtonStyle())
         .disabled(game.selected == nil)
     }
 }

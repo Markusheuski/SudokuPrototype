@@ -124,6 +124,7 @@ final class GameState: ObservableObject {
             if value == solution[cell.row][cell.col] {
                 board[cell.row][cell.col] = value
                 notes[cell.row][cell.col].removeAll()
+                clearNoteFromPeers(row: cell.row, col: cell.col, value: value)
                 HapticManager.shared.correctEntry()
                 checkSolved()
             } else {
@@ -193,6 +194,21 @@ final class GameState: ObservableObject {
     private func tick() {
         elapsedSeconds += 1
         persist()
+    }
+
+    /// Removes `value` from the pencil notes of every other cell sharing
+    /// the row, column, or 3x3 block with (row, col) — called right after
+    /// a correct Classic entry, not retroactively on other actions.
+    private func clearNoteFromPeers(row: Int, col: Int, value: Int) {
+        for r in 0..<9 {
+            for c in 0..<9 where (r, c) != (row, col) {
+                let sameRowOrCol = r == row || c == col
+                let sameBlock = r / 3 == row / 3 && c / 3 == col / 3
+                if sameRowOrCol || sameBlock {
+                    notes[r][c].remove(value)
+                }
+            }
+        }
     }
 
     /// Overwrites every non-given cell that doesn't already match the

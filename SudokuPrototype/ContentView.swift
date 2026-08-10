@@ -18,6 +18,13 @@ struct ContentView: View {
                     NumberPadView(game: game)
                         .padding(.horizontal)
                 }
+                .padding(.vertical, 16)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                        .fill(palette.surfaceElevated)
+                        .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
+                )
+                .padding(.horizontal)
                 .blur(radius: game.isPaused ? 20 : 0)
                 .allowsHitTesting(!game.isPaused)
 
@@ -76,7 +83,7 @@ struct ContentView: View {
             .padding(.top, 4)
         }
         .padding(24)
-        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
+        .background(.thinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge))
     }
 
     private var endOfGameOverlay: some View {
@@ -115,7 +122,7 @@ struct ContentView: View {
                     .padding(.top, 4)
                 }
                 .padding(24)
-                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: 20))
+                .background(.thinMaterial, in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge))
             }
     }
 

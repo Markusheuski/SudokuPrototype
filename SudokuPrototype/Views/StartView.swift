@@ -57,7 +57,11 @@ struct StartView: View {
                         }
                         .frame(width: controlWidth)
                         .padding(.vertical, 12)
-                        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 16))
+                        .background(
+                            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                                .fill(palette.surfaceElevated)
+                                .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
+                        )
                     }
                     .buttonStyle(.plain)
                 }
@@ -125,14 +129,14 @@ struct StartView: View {
                         .padding(.vertical, 12)
                         .background(
                             isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 10)
+                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                         )
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var difficultyPicker: some View {
@@ -157,7 +161,7 @@ struct StartView: View {
                     .padding(.vertical, 12)
                     .background(
                         isSelected ? palette.accent : Color.clear,
-                        in: RoundedRectangle(cornerRadius: 10)
+                        in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                     )
                     .opacity(isUnlocked ? 1 : 0.4)
                 }
@@ -165,7 +169,7 @@ struct StartView: View {
             }
         }
         .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private func selectDifficulty(_ difficulty: Difficulty) {

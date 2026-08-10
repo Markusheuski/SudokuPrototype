@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
+    @State private var showResetStatsConfirmation = false
 
     private var isDarkActive: Bool {
         colorScheme == .dark
@@ -41,6 +42,12 @@ struct SettingsView: View {
                     Toggle("Haptic feedback", isOn: $haptics.isEnabled)
                 }
 
+                Section {
+                    Button("Reset Statistics", role: .destructive) {
+                        showResetStatsConfirmation = true
+                    }
+                }
+
                 #if DEBUG
                 Section("Debug") {
                     Button("Reset All Data", role: .destructive) {
@@ -59,6 +66,18 @@ struct SettingsView: View {
                         .tint(palette.accent)
                 }
             }
+            .confirmationDialog(
+                "Reset Statistics?",
+                isPresented: $showResetStatsConfirmation,
+                titleVisibility: .visible
+            ) {
+                Button("Reset", role: .destructive) {
+                    PlayerStats.shared.resetAll()
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("This will permanently delete your stats, streaks, and unlocked difficulties. This can't be undone.")
+            }
         }
     }
 
@@ -76,14 +95,14 @@ struct SettingsView: View {
                         .padding(.vertical, 10)
                         .background(
                             isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: 8)
+                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                         )
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
+        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var themePreview: some View {
@@ -97,9 +116,9 @@ struct SettingsView: View {
             .frame(width: 130, height: 130)
             .padding(16)
             .frame(maxWidth: .infinity)
-            .background(palette.background, in: RoundedRectangle(cornerRadius: 16))
+            .background(palette.background, in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge))
             .overlay(
-                RoundedRectangle(cornerRadius: 16)
+                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
                     .stroke(Color.primary.opacity(0.08), lineWidth: 1)
             )
     }
@@ -121,16 +140,17 @@ struct SettingsView: View {
         } label: {
             VStack(spacing: 8) {
                 ZStack(alignment: .topTrailing) {
-                    RoundedRectangle(cornerRadius: 12)
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium)
                         .fill(variant.backgroundColor)
                         .frame(height: 56)
+                        .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
                         .overlay(
                             Circle()
                                 .fill(variant.accentColor)
                                 .frame(width: 20, height: 20)
                         )
                         .overlay(
-                            RoundedRectangle(cornerRadius: 12)
+                            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium)
                                 .stroke(isSelected ? variant.accentColor : Color.clear, lineWidth: 2)
                         )
 

@@ -58,24 +58,40 @@ enum DarkVariant: String, CaseIterable, Identifiable, Equatable {
         case .navy: return Color(hex: "9B9BA1")
         }
     }
+
+    /// A shade lighter than backgroundColor, for cards/panels that should
+    /// read as sitting above the screen background.
+    var surfaceElevatedColor: Color {
+        switch self {
+        case .graphite: return Color(hex: "2C2C2E")
+        case .charcoal: return Color(hex: "322F2B")
+        case .navy: return Color(hex: "202836")
+        }
+    }
 }
 
 struct Palette: Equatable {
     let background: Color
     let accent: Color
     let given: Color
+    let surfaceElevated: Color
+    let border: Color
 
     static let light = Palette(
         background: Color(hex: "F5F5F7"),
         accent: .blue,
-        given: Color(hex: "3A3A3C")
+        given: Color(hex: "3A3A3C"),
+        surfaceElevated: Color.white,
+        border: Color.black.opacity(0.08)
     )
 
     static func dark(for variant: DarkVariant) -> Palette {
         Palette(
             background: variant.backgroundColor,
             accent: variant.accentColor,
-            given: variant.givenColor
+            given: variant.givenColor,
+            surfaceElevated: variant.surfaceElevatedColor,
+            border: Color.white.opacity(0.08)
         )
     }
 }

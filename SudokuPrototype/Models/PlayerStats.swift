@@ -102,14 +102,12 @@ final class PlayerStats: ObservableObject {
         return Int((Double(stats.flawlessWins[difficulty] ?? 0) / Double(w)) * 100)
     }
 
-    #if DEBUG
     func resetAll() {
         classic = ModeStats()
         freestyle = ModeStats()
         unlockedDifficulties = [.easy, .medium]
         persist()
     }
-    #endif
 
     private struct Snapshot: Codable {
         var classic: ModeStats
