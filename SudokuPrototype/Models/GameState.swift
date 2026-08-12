@@ -10,12 +10,19 @@ final class GameState: ObservableObject {
     @Published var mistakes = 0
     @Published var isPencilMode = false
     @Published var isPaused = false
-    @Published var elapsedSeconds = 0
 
     private(set) var solution: [[Int]]
     private(set) var givenMask: [[Bool]] // true = клетка была дана изначально (не редактируется)
     private(set) var excludedDigits: [[Set<Int>]] // цифры, уже опробованные и оказавшиеся неверными для клетки
     private(set) var revealedMask: [[Bool]] // клетки, дорисованные решением после проигрыша
+
+    /// Deliberately NOT @Published: it changes every second while the timer
+    /// runs, and BoardView/NumberPadView also hold this same GameState as an
+    /// @ObservedObject — broadcasting a per-second change would force them
+    /// to re-layout every second too. The one place that needs a live
+    /// per-second UI update (ContentView's timer label) polls this via a
+    /// TimelineView instead of relying on Combine notification.
+    var elapsedSeconds = 0
 
     var maxMistakes: Int { difficulty.maxMistakes }
     private(set) var difficulty: Difficulty

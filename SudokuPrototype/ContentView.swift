@@ -153,24 +153,31 @@ struct ContentView: View {
         .tint(palette.accent)
     }
 
+    /// Wrapped in a `TimelineView` so only this small label redraws once a
+    /// second — `elapsedSeconds` deliberately isn't `@Published` (see
+    /// GameState), so the once-a-second tick can't force BoardView/
+    /// NumberPadView (also observing `game`) to re-layout every second and
+    /// eat a stray tap mid-relayout.
     private var timerControl: some View {
-        HStack(spacing: 6) {
-            Button {
-                game.togglePause()
-            } label: {
-                Image(systemName: game.isPaused ? "play.fill" : "pause.fill")
-                    .font(.caption)
-            }
-            .buttonStyle(.plain)
-            .disabled(game.isSolved || game.isGameOver)
+        TimelineView(.periodic(from: .now, by: 1)) { _ in
+            HStack(spacing: 6) {
+                Button {
+                    game.togglePause()
+                } label: {
+                    Image(systemName: game.isPaused ? "play.fill" : "pause.fill")
+                        .font(.caption)
+                }
+                .buttonStyle(.plain)
+                .disabled(game.isSolved || game.isGameOver)
 
-            Text(GameState.formatted(game.elapsedSeconds))
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
+                Text(GameState.formatted(game.elapsedSeconds))
+                    .font(.subheadline.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .background(Color.secondary.opacity(0.12), in: Capsule())
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 8)
-        .background(Color.secondary.opacity(0.12), in: Capsule())
     }
 
     private var mistakesBadge: some View {
