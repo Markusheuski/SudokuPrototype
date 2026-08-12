@@ -82,27 +82,11 @@ struct SettingsView: View {
     }
 
     private var appearancePicker: some View {
-        HStack(spacing: 4) {
-            ForEach(AppearanceMode.allCases) { mode in
-                let isSelected = mode == theme.appearanceMode
-                Button {
-                    theme.setAppearanceMode(mode)
-                } label: {
-                    Text(mode.displayName)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        )
-                }
-                .buttonStyle(.plain)
-            }
+        SegmentedSelector(options: AppearanceMode.allCases, selection: theme.appearanceMode) { mode in
+            mode.displayName
+        } onSelect: { mode in
+            theme.setAppearanceMode(mode)
         }
-        .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var themePreview: some View {
@@ -145,13 +129,17 @@ struct SettingsView: View {
                         .frame(height: 56)
                         .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
                         .overlay(
+                            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium)
+                                .fill(palette.accent.opacity(isSelected ? 0.12 : 0))
+                        )
+                        .overlay(
                             Circle()
                                 .fill(variant.accentColor)
                                 .frame(width: 20, height: 20)
                         )
                         .overlay(
                             RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium)
-                                .stroke(isSelected ? variant.accentColor : Color.clear, lineWidth: 2)
+                                .stroke(variant.accentColor.opacity(isSelected ? 1 : 0.4), lineWidth: isSelected ? 2 : 1)
                         )
 
                     if isSelected {
@@ -159,6 +147,7 @@ struct SettingsView: View {
                             .foregroundStyle(variant.accentColor)
                             .background(Circle().fill(Color.white))
                             .padding(4)
+                            .transition(.scale.combined(with: .opacity))
                     }
                 }
 
@@ -168,6 +157,7 @@ struct SettingsView: View {
             }
         }
         .buttonStyle(.plain)
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: theme.selectedVariant)
     }
 
     #if DEBUG

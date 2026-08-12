@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum AppearanceMode: String, CaseIterable, Identifiable, Equatable {
+enum AppearanceMode: String, CaseIterable, Identifiable, Equatable, Hashable {
     case light, dark, system
 
     var id: String { rawValue }

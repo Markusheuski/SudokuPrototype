@@ -47,6 +47,11 @@ final class HapticManager: ObservableObject {
         lightImpact.impactOccurred()
     }
 
+    func selectionChanged() {
+        guard isEnabled else { return }
+        lightImpact.impactOccurred()
+    }
+
     func win() {
         guard isEnabled else { return }
         notification.notificationOccurred(.success)

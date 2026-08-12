@@ -30,11 +30,13 @@ final class ThemeManager: ObservableObject {
 
     func setAppearanceMode(_ mode: AppearanceMode) {
         guard mode != appearanceMode else { return }
+        HapticManager.shared.selectionChanged()
         transition { self.appearanceMode = mode }
     }
 
     func setVariant(_ variant: DarkVariant) {
         guard variant != selectedVariant else { return }
+        HapticManager.shared.selectionChanged()
         transition { self.selectedVariant = variant }
     }
 

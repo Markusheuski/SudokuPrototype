@@ -11,6 +11,7 @@ struct StartView: View {
     @State private var lockedHintText: String?
     @AppStorage("selectedDifficulty") private var selectedDifficulty: Difficulty = .medium
     @AppStorage("selectedGameMode") private var selectedMode: GameMode = .classic
+    @Namespace private var difficultyAnimation
     let onStart: (Difficulty, GameMode) -> Void
     let onContinue: () -> Void
 
@@ -120,27 +121,11 @@ struct StartView: View {
     }
 
     private var modePicker: some View {
-        HStack(spacing: 4) {
-            ForEach(GameMode.allCases) { mode in
-                let isSelected = mode == selectedMode
-                Button {
-                    selectedMode = mode
-                } label: {
-                    Text(mode.displayName)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(
-                            isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        )
-                }
-                .buttonStyle(.plain)
-            }
+        SegmentedSelector(options: GameMode.allCases, selection: selectedMode) { mode in
+            mode.displayName
+        } onSelect: { mode in
+            selectMode(mode)
         }
-        .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var difficultyPicker: some View {
@@ -164,8 +149,13 @@ struct StartView: View {
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
                     .background(
-                        isSelected ? palette.accent : Color.clear,
-                        in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                        ZStack {
+                            if isSelected {
+                                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+                                    .fill(palette.accent)
+                                    .matchedGeometryEffect(id: "difficultySelector", in: difficultyAnimation)
+                            }
+                        }
                     )
                     .opacity(isUnlocked ? 1 : 0.4)
                 }
@@ -174,6 +164,13 @@ struct StartView: View {
         }
         .padding(4)
         .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
+        .animation(.spring(response: 0.35, dampingFraction: 0.75), value: selectedDifficulty)
+    }
+
+    private func selectMode(_ mode: GameMode) {
+        guard mode != selectedMode else { return }
+        HapticManager.shared.selectionChanged()
+        selectedMode = mode
     }
 
     private func selectDifficulty(_ difficulty: Difficulty) {
@@ -189,6 +186,8 @@ struct StartView: View {
             }
             return
         }
+        guard difficulty != selectedDifficulty else { return }
+        HapticManager.shared.selectionChanged()
         selectedDifficulty = difficulty
     }
 }
