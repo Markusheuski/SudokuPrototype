@@ -7,37 +7,32 @@ struct ContentView: View {
     let onBack: () -> Void
 
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer(minLength: 0)
+        ZStack {
+            VStack(spacing: 16) {
+                topBar
 
-            ZStack {
-                VStack(spacing: 16) {
-                    topBar
+                BoardView(game: game)
+                    .padding(.horizontal)
 
-                    BoardView(game: game)
-                        .padding(.horizontal)
-
-                    NumberPadView(game: game)
-                        .padding(.horizontal)
-                }
-                .padding(.top, 16)
-                .padding(.bottom, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
-                        .fill(palette.surfaceElevated)
-                        .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
-                )
-                .padding(.horizontal)
-                .blur(radius: game.isPaused ? 20 : 0)
-                .allowsHitTesting(!game.isPaused)
-
-                if game.isPaused {
-                    pausedOverlay
-                }
+                NumberPadView(game: game)
+                    .padding(.horizontal)
             }
+            .padding(.top, 16)
+            .padding(.bottom, 10)
+            .background(
+                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                    .fill(palette.surfaceElevated)
+                    .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
+            )
+            .padding(.horizontal)
+            .blur(radius: game.isPaused ? 20 : 0)
+            .allowsHitTesting(!game.isPaused)
 
-            Spacer(minLength: 0)
+            if game.isPaused {
+                pausedOverlay
+            }
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .background(palette.background.ignoresSafeArea())
         .overlay {
             if game.isGameOver || game.isSolved {
