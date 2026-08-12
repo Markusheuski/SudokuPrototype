@@ -127,7 +127,6 @@ final class GameState: ObservableObject {
 
         switch mode {
         case .classic:
-            guard board[cell.row][cell.col] != solution[cell.row][cell.col] else { return }
             guard !excludedDigits[cell.row][cell.col].contains(value) else { return }
             if value == solution[cell.row][cell.col] {
                 board[cell.row][cell.col] = value
