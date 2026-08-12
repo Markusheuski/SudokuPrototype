@@ -7,29 +7,32 @@ struct ContentView: View {
     let onBack: () -> Void
 
     var body: some View {
-        ZStack {
-            VStack(spacing: 16) {
-                topBar
+        VStack(spacing: 14) {
+            topBar
+                .padding(.top, 8)
 
-                BoardView(game: game)
-                    .padding(.horizontal)
+            ZStack {
+                VStack(spacing: 16) {
+                    BoardView(game: game)
+                        .padding(.horizontal)
 
-                NumberPadView(game: game)
-                    .padding(.horizontal)
-            }
-            .padding(.top, 16)
-            .padding(.bottom, 10)
-            .background(
-                RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
-                    .fill(palette.surfaceElevated)
-                    .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
-            )
-            .padding(.horizontal)
-            .blur(radius: game.isPaused ? 20 : 0)
-            .allowsHitTesting(!game.isPaused)
+                    NumberPadView(game: game)
+                        .padding(.horizontal)
+                }
+                .padding(.top, 16)
+                .padding(.bottom, 10)
+                .background(
+                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                        .fill(palette.surfaceElevated)
+                        .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
+                )
+                .padding(.horizontal)
+                .blur(radius: game.isPaused ? 20 : 0)
+                .allowsHitTesting(!game.isPaused)
 
-            if game.isPaused {
-                pausedOverlay
+                if game.isPaused {
+                    pausedOverlay
+                }
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
@@ -175,7 +178,7 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 8)
+            .padding(.vertical, 6)
             .background(Color.secondary.opacity(0.12), in: Capsule())
         }
     }
@@ -195,7 +198,7 @@ struct ContentView: View {
             }
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 8)
+        .padding(.vertical, 6)
         .background(Color.secondary.opacity(0.12), in: Capsule())
     }
 
