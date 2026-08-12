@@ -17,29 +17,28 @@ struct StartView: View {
     private let controlWidth: CGFloat = 300
 
     var body: some View {
-        ZStack {
-            VStack {
-                HStack {
-                    Text("SUDOKU")
-                        .font(.system(size: 40, weight: .heavy, design: .rounded))
-                        .tracking(2)
-                    Spacer()
-                    Button {
-                        showProfile = true
-                    } label: {
-                        Image(systemName: "person.circle")
-                            .font(.title2)
-                    }
-                    Button {
-                        showSettings = true
-                    } label: {
-                        Image(systemName: "gearshape.fill")
-                            .font(.title2)
-                    }
-                }
-                .padding()
+        VStack(spacing: 0) {
+            HStack {
+                Text("SUDOKU")
+                    .font(.system(size: 40, weight: .heavy, design: .rounded))
+                    .tracking(2)
                 Spacer()
+                Button {
+                    showProfile = true
+                } label: {
+                    Image(systemName: "person.circle")
+                        .font(.title2)
+                        .foregroundStyle(palette.accent.opacity(0.85))
+                }
+                Button {
+                    showSettings = true
+                } label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.title2)
+                        .foregroundStyle(palette.accent.opacity(0.85))
+                }
             }
+            .padding()
 
             VStack(spacing: 16) {
                 Spacer()
@@ -61,6 +60,10 @@ struct StartView: View {
                             RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
                                 .fill(palette.surfaceElevated)
                                 .shadow(color: Color.black.opacity(0.18), radius: 8, y: 2)
+                        )
+                        .overlay(
+                            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                                .stroke(palette.accent.opacity(0.4), lineWidth: 1)
                         )
                     }
                     .buttonStyle(.plain)
@@ -98,6 +101,7 @@ struct StartView: View {
 
                 Spacer()
             }
+            .offset(y: -16)
         }
         .background(palette.background.ignoresSafeArea())
         .sheet(isPresented: $showSettings) {
@@ -152,8 +156,8 @@ struct StartView: View {
                             .font(.subheadline.weight(isSelected ? .semibold : .regular))
                         if !isUnlocked {
                             Image(systemName: "lock.fill")
-                                .font(.system(size: 10))
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 12))
+                                .foregroundStyle(.primary)
                         }
                     }
                     .foregroundStyle(isSelected ? Color.white : Color.primary)
