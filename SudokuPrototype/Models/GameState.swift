@@ -100,6 +100,12 @@ final class GameState: ObservableObject {
         persist()
     }
 
+    func deselect() {
+        guard selected != nil else { return }
+        selected = nil
+        persist()
+    }
+
     func togglePencilMode() {
         isPencilMode.toggle()
         HapticManager.shared.pencilModeToggled()

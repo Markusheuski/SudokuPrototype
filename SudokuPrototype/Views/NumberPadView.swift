@@ -26,7 +26,12 @@ struct NumberPadView: View {
         let isNoted = game.selected.map { game.notes[$0.row][$0.col].contains(number) } ?? false
         let isFilled = game.mode == .classic && game.placedCount(of: number) == 9
         let isActiveNote = isNoted && game.isPencilMode
-        let isEnabled = game.selected != nil && !isExcluded && !isFilled
+        // Deliberately not gated on `game.selected != nil`: "exhausted" is a
+        // board-wide fact (all 9 placed), so it should read the same whether
+        // or not a cell happens to be selected right now. Requiring a
+        // selection here made the whole pad look dimmed/disabled the moment
+        // a fresh game starts, before the player has tapped anything.
+        let isEnabled = !isExcluded && !isFilled
 
         return PadButton(isEnabled: isEnabled) {
             game.enter(value: number)

@@ -37,7 +37,12 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(palette.background.ignoresSafeArea())
+        .contentShape(Rectangle())
+        .onTapGesture {
+            game.deselect()
+        }
         .overlay {
             if game.isGameOver || game.isSolved {
                 endOfGameOverlay
@@ -144,6 +149,8 @@ struct ContentView: View {
                     mistakesBadge
                 } else if game.isBoardFull {
                     checkButton
+                } else {
+                    Color.clear.frame(width: 1, height: 1)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .trailing)
