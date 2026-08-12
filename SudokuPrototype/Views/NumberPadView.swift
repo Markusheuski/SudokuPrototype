@@ -35,6 +35,7 @@ struct NumberPadView: View {
                 .font(.title2.weight(.medium))
                 .monospacedDigit()
                 .strikethrough(isExcluded)
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .foregroundColor(padTextColor(isFilled: isFilled, isExcluded: isExcluded, isActiveNote: isActiveNote))
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
@@ -59,6 +60,7 @@ struct NumberPadView: View {
             game.togglePencilMode()
         } label: {
             Image(systemName: "pencil")
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .foregroundColor(game.isPencilMode ? .white : .primary)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
@@ -76,6 +78,7 @@ struct NumberPadView: View {
             game.clearSelected()
         } label: {
             Image(systemName: "delete.left")
+                .frame(maxWidth: .infinity, minHeight: 44)
                 .foregroundColor(.primary)
                 .overlay(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
