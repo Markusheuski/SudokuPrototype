@@ -99,6 +99,7 @@ struct StartView: View {
                 .buttonStyle(.borderedProminent)
                 .tint(palette.accent)
                 .controlSize(.large)
+                .shadow(color: palette.accent.opacity(0.35), radius: 10, y: 4)
 
                 Spacer()
             }
@@ -153,6 +154,7 @@ struct StartView: View {
                             if isSelected {
                                 RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                                     .fill(palette.accent)
+                                    .shadow(color: palette.accent.opacity(0.3), radius: 8, y: 3)
                                     .matchedGeometryEffect(id: "difficultySelector", in: difficultyAnimation)
                             }
                         }

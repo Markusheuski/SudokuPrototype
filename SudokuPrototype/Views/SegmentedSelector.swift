@@ -33,6 +33,7 @@ struct SegmentedSelector<Option: Hashable>: View {
                                 if isSelected {
                                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
                                         .fill(palette.accent)
+                                        .shadow(color: palette.accent.opacity(0.3), radius: 8, y: 3)
                                         .matchedGeometryEffect(id: "segment", in: animation)
                                 }
                             }

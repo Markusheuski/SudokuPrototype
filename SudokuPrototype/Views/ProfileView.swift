@@ -2,7 +2,6 @@ import SwiftUI
 
 struct ProfileView: View {
     @ObservedObject var stats: PlayerStats
-    @Environment(\.palette) private var palette
     @Environment(\.dismiss) private var dismiss
     @State private var selectedMode: GameMode = .classic
     let onStartGame: (GameMode) -> Void
@@ -77,27 +76,13 @@ struct ProfileView: View {
     }
 
     private var modePicker: some View {
-        HStack(spacing: 4) {
-            ForEach(GameMode.allCases) { mode in
-                let isSelected = mode == selectedMode
-                Button {
-                    selectedMode = mode
-                } label: {
-                    Text(mode.displayName)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
-                        .foregroundStyle(isSelected ? Color.white : Color.primary)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 10)
-                        .background(
-                            isSelected ? palette.accent : Color.clear,
-                            in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        )
-                }
-                .buttonStyle(.plain)
-            }
+        SegmentedSelectorGlass(options: GameMode.allCases, selection: selectedMode) { mode in
+            mode.displayName
+        } onSelect: { mode in
+            guard mode != selectedMode else { return }
+            HapticManager.shared.selectionChanged()
+            selectedMode = mode
         }
-        .padding(4)
-        .background(Color.secondary.opacity(0.12), in: RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusMedium))
     }
 
     private var emptyState: some View {
