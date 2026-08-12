@@ -48,12 +48,20 @@ final class ThemeManager: ObservableObject {
     }
     #endif
 
+    /// The dim-to-black-and-back hides the moment the actual switch happens
+    /// (colorScheme changes aren't reliably animatable by SwiftUI on their
+    /// own), but the underlying value change itself is *also* wrapped in
+    /// `withAnimation` so any view reading the resulting `Palette` colors
+    /// cross-fades instead of snapping, rather than relying solely on the
+    /// dim overlay to mask an instant jump.
     private func transition(_ change: @escaping () -> Void) {
         withAnimation(.easeInOut(duration: 0.15)) {
             isDimmed = true
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) { [weak self] in
-            change()
+            withAnimation(.easeInOut(duration: 0.25)) {
+                change()
+            }
             withAnimation(.easeInOut(duration: 0.3)) {
                 self?.isDimmed = false
             }

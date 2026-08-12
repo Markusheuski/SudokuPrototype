@@ -24,6 +24,10 @@ struct SettingsView: View {
 
                 Section("Appearance") {
                     appearancePicker
+                } footer: {
+                    if theme.appearanceMode == .system {
+                        Text("System: currently \(isDarkActive ? "dark" : "light") — matches your device's setting.")
+                    }
                 }
 
                 Section {
