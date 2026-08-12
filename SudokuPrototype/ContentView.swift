@@ -7,18 +7,21 @@ struct ContentView: View {
     let onBack: () -> Void
 
     var body: some View {
-        VStack(spacing: 16) {
-            topBar
+        VStack(spacing: 0) {
+            Spacer(minLength: 0)
 
             ZStack {
                 VStack(spacing: 16) {
+                    topBar
+
                     BoardView(game: game)
                         .padding(.horizontal)
 
                     NumberPadView(game: game)
                         .padding(.horizontal)
                 }
-                .padding(.vertical, 16)
+                .padding(.top, 16)
+                .padding(.bottom, 10)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
                         .fill(palette.surfaceElevated)
@@ -33,9 +36,8 @@ struct ContentView: View {
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(.top, 8)
         .background(palette.background.ignoresSafeArea())
         .overlay {
             if game.isGameOver || game.isSolved {
