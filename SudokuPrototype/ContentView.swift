@@ -7,9 +7,10 @@ struct ContentView: View {
     let onBack: () -> Void
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 0) {
             topBar
-                .padding(.top, 8)
+                .padding(.top, 10)
+                .padding(.bottom, 14)
 
             ZStack {
                 VStack(spacing: 16) {
@@ -34,8 +35,8 @@ struct ContentView: View {
                     pausedOverlay
                 }
             }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
         .background(palette.background.ignoresSafeArea())
         .overlay {
             if game.isGameOver || game.isSolved {
@@ -131,7 +132,7 @@ struct ContentView: View {
     }
 
     private var topBar: some View {
-        HStack {
+        HStack(alignment: .center) {
             backButton
             Spacer()
             timerControl
@@ -142,6 +143,7 @@ struct ContentView: View {
                 checkButton
             }
         }
+        .frame(height: 44)
         .padding(.horizontal)
     }
 
@@ -178,7 +180,7 @@ struct ContentView: View {
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 10)
-            .padding(.vertical, 6)
+            .frame(height: 34)
             .background(Color.secondary.opacity(0.12), in: Capsule())
         }
     }
@@ -198,7 +200,7 @@ struct ContentView: View {
             }
         }
         .padding(.horizontal, 10)
-        .padding(.vertical, 6)
+        .frame(height: 34)
         .background(Color.secondary.opacity(0.12), in: Capsule())
     }
 
