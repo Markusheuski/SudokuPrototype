@@ -34,25 +34,13 @@ struct NumberPadView: View {
             Text("\(number)")
                 .font(.title2.weight(.medium))
                 .monospacedDigit()
-                .strikethrough(isExcluded)
                 .frame(maxWidth: .infinity, minHeight: 44)
-                .foregroundColor(padTextColor(isFilled: isFilled, isExcluded: isExcluded, isActiveNote: isActiveNote))
+                .foregroundColor(isActiveNote ? .white : .primary)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        .fill(isActiveNote ? palette.accent : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        .stroke(palette.border, lineWidth: 0.5)
+                        .fill(isActiveNote ? palette.accent : Color.secondary.opacity(0.15))
                 )
         }
-    }
-
-    private func padTextColor(isFilled: Bool, isExcluded: Bool, isActiveNote: Bool) -> Color {
-        if isFilled { return .secondary }
-        if isExcluded { return .red.opacity(0.5) }
-        if isActiveNote { return .white }
-        return .primary
     }
 
     private var pencilButton: some View {
@@ -60,15 +48,16 @@ struct NumberPadView: View {
             game.togglePencilMode()
         } label: {
             Image(systemName: "pencil")
+                .symbolRenderingMode(.palette)
+                .fontWeight(.semibold)
+                .foregroundStyle(
+                    game.isPencilMode ? Color.white : Color.primary,
+                    game.isPencilMode ? Color.white : palette.accent
+                )
                 .frame(maxWidth: .infinity, minHeight: 44)
-                .foregroundColor(game.isPencilMode ? .white : .primary)
                 .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        .fill(game.isPencilMode ? palette.accent : Color.clear)
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        .stroke(palette.border, lineWidth: 0.5)
+                        .fill(game.isPencilMode ? palette.accent : Color.secondary.opacity(0.15))
                 )
         }
     }
@@ -80,9 +69,9 @@ struct NumberPadView: View {
             Image(systemName: "delete.left")
                 .frame(maxWidth: .infinity, minHeight: 44)
                 .foregroundColor(.primary)
-                .overlay(
+                .background(
                     RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                        .stroke(palette.border, lineWidth: 0.5)
+                        .fill(Color.secondary.opacity(0.15))
                 )
         }
     }

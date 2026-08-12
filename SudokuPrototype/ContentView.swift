@@ -132,18 +132,29 @@ struct ContentView: View {
     }
 
     private var topBar: some View {
-        HStack(alignment: .center) {
+        HStack(spacing: 0) {
             backButton
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
+
             timerControl
-            Spacer()
-            if game.mode == .classic {
-                mistakesBadge
-            } else if game.isBoardFull {
-                checkButton
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            Group {
+                if game.mode == .classic {
+                    mistakesBadge
+                } else if game.isBoardFull {
+                    checkButton
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
+        .padding(.horizontal, 12)
         .frame(height: 44)
+        .background(
+            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusLarge)
+                .fill(palette.surfaceElevated)
+                .shadow(color: Color.black.opacity(0.13), radius: 4, y: 1)
+        )
         .padding(.horizontal)
     }
 
@@ -179,9 +190,6 @@ struct ContentView: View {
                     .font(.subheadline.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
-            .padding(.horizontal, 10)
-            .frame(height: 34)
-            .background(Color.secondary.opacity(0.12), in: Capsule())
         }
     }
 
@@ -199,9 +207,6 @@ struct ContentView: View {
                 }
             }
         }
-        .padding(.horizontal, 10)
-        .frame(height: 34)
-        .background(Color.secondary.opacity(0.12), in: Capsule())
     }
 
     private var remainingLives: Int {
