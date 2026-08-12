@@ -186,6 +186,7 @@ final class GameState: ObservableObject {
     func stopTimer() {
         timer?.invalidate()
         timer = nil
+        persist()
     }
 
     static func formatted(_ seconds: Int) -> String {
@@ -200,7 +201,6 @@ final class GameState: ObservableObject {
 
     private func tick() {
         elapsedSeconds += 1
-        persist()
     }
 
     /// Removes `value` from the pencil notes of every other cell sharing
