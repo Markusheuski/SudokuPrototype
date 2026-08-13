@@ -1,15 +1,19 @@
 import SwiftUI
 
-/// Experimental Liquid Glass variant of `SegmentedSelector`, isolated to
-/// the stats Profile screen's Classic/Freestyle switcher only — a testbed
-/// to see how a glass material reads against the rest of the app's flat +
-/// accent-glow language before deciding whether to roll it out anywhere
-/// else. Everything except the active capsule's material (position spring
-/// via `matchedGeometryEffect`, haptic via the caller's `onSelect`) is
-/// identical to `SegmentedSelector`. Deliberately a separate type rather
-/// than a flag on `SegmentedSelector` so the other three usages (Start
-/// screen's difficulty/mode pickers, Settings' Appearance picker) can't be
-/// affected by this experiment.
+/// Intended as an experimental Liquid Glass variant of `SegmentedSelector`,
+/// isolated to the stats Profile screen's Classic/Freestyle switcher only —
+/// a testbed to see how a glass material reads against the rest of the
+/// app's flat + accent-glow language before deciding whether to roll it
+/// out anywhere else. Deliberately a separate type rather than a flag on
+/// `SegmentedSelector` so the other three usages (Start screen's
+/// difficulty/mode pickers, Settings' Appearance picker) can't be affected.
+///
+/// **Shelved for now:** the CI runner builds with Xcode 16.4 / iOS SDK
+/// 18.5, which doesn't declare `glassEffect` at all — `#available(iOS 26,
+/// *)` only gates *runtime* availability, it can't make an undeclared API
+/// compile. Currently just the flat-fill+glow fallback, identical to
+/// `SegmentedSelector`. Revisit once the runner's Xcode is upgraded to a
+/// version whose SDK actually has the Liquid Glass APIs.
 struct SegmentedSelectorGlass<Option: Hashable>: View {
     let options: [Option]
     let selection: Option
@@ -50,14 +54,8 @@ struct SegmentedSelectorGlass<Option: Hashable>: View {
 
     @ViewBuilder
     private var activeCapsule: some View {
-        if #available(iOS 26, *) {
-            Capsule()
-                .fill(Color.clear)
-                .glassEffect(.regular.tint(palette.accent), in: .capsule, isEnabled: true)
-        } else {
-            RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
-                .fill(palette.accent)
-                .shadow(color: palette.accent.opacity(0.3), radius: 8, y: 3)
-        }
+        RoundedRectangle(cornerRadius: DesignTokens.cornerRadiusSmall)
+            .fill(palette.accent)
+            .shadow(color: palette.accent.opacity(0.3), radius: 8, y: 3)
     }
 }
